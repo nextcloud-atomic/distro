@@ -1,0 +1,13 @@
+config BR2_PACKAGE_CUSTOM_PACKAGE
+	bool "custom-package"
+	depends on BR2_PACKAGE_HOST_GO_TARGET_ARCH_SUPPORTS
+	depends on BR2_PACKAGE_HOST_GO_TARGET_CGO_LINKING_SUPPORTS
+	depends on BR2_TOOLCHAIN_HAS_THREADS
+  select BR2_PACKAGE_FINDUTILS
+	help
+	  Example of a custom buildroot_ext Go package.
+	  
+comment "custom-package needs a toolchain w/ threads"
+	depends on BR2_PACKAGE_HOST_GO_TARGET_ARCH_SUPPORTS && \
+		BR2_PACKAGE_HOST_GO_TARGET_CGO_LINKING_SUPPORTS
+	depends on !BR2_TOOLCHAIN_HAS_THREADS

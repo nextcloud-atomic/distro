@@ -1,0 +1,22 @@
+[connection]
+id=MyWifiNetwork
+uuid=91291558-93f8-4bae-aaa8-a1c528d32bbd
+type=wifi
+
+[wifi]
+mode=infrastructure
+ssid=MyWifiNetwork
+
+[wifi-security]
+auth-alg=open
+key-mgmt=wpa-psk
+psk=MyWirelessPassword
+
+[ipv4]
+method=auto
+ignore-auto-dns=true
+dns=1.1.1.1; 8.8.8.8
+
+[ipv6]
+addr-gen-mode=stable-privacy
+method=auto

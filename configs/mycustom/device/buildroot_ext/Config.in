@@ -1,0 +1,1 @@
+source "$BR2_EXTERNAL_MYCUSTOM_DEVICE_PATH/package/custom-package/Config.in"

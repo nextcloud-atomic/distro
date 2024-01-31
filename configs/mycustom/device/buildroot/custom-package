@@ -1,0 +1,2 @@
+# custom-package buildroot_ext example Go package
+BR2_PACKAGE_CUSTOM_PACKAGE=y
