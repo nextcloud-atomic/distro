@@ -5,12 +5,13 @@ After=ncp-activation.service
 
 [Service]
 Type=simple
-ExecStartPre=helm repo update nextcloud-aio
-ExecStart=docker run --pull=always --init --rm --name nextcloud-aio-mastercontainer \
-          -p 80:80 -p 8080:8080 -p 8443:8443 \
-          --volume nextcloud_aio_mastercontainer:/mnt/docker-aio-config \
-          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
-          docker.io/nextcloud/all-in-one:latest
-ExecStop=docker stop nextcloud-aio-mastercontainer
+#ExecStart=docker run --pull=always --init --rm --name nextcloud-aio-mastercontainer \
+#          -p 80:80 -p 8080:8080 -p 8443:8443 \
+#          --volume nextcloud_aio_mastercontainer:/mnt/docker-aio-config \
+#          --volume /var/run/docker.sock:/var/run/docker.sock:ro \
+#          docker.io/nextcloud/all-in-one:latest
+WorkingDirectory=/etc/ncp/nextcloud-aio
+ExecStart=docker compose up
+ExecStop=docker compose down
 Restart=on-failure
 RestartSec=30

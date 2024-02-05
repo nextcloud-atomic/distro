@@ -23,5 +23,6 @@ sed \
   -e "s/\${SIGNALING_SECRET}/${SIGNALING_SECRET}" \
   -e "s/\${TALK_INTERNAL_SECRET}/${TALK_INTERNAL_SECRET}" \
   -e "s/\${TURN_SECRET}/${TURN_SECRET}" \
-  /etc/ncp/all-in-one/values.yaml.tmpl > /etc/ncp/all-in-one/value.yaml
+  /usr/lib/ncp/nextcloud-aio/defaults.env > /etc/ncp/all-in-one/.env
+chmod 0600 /etc/ncp/all-in-one/.env
 echo "Done."
