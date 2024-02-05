@@ -1,0 +1,7 @@
+[Unit]
+Description=NCP provisioning
+
+[Service]
+Type=oneshot
+ConditionPathExists=!/etc/ncp/all-in-one/values.yaml
+ExecStart=/opt/ncp/ncp-activation.sh
