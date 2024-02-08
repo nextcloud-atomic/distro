@@ -1,7 +1,9 @@
 [Unit]
-Description=NCP provisioning
+Description=NCP Activation
 
 [Service]
 Type=oneshot
-ConditionPathExists=!/etc/ncp/all-in-one/values.yaml
-ExecStart=/opt/ncp/ncp-activation.sh
+ConditionPathExists=!/etc/ncp/secrets.json
+ExecStartPre=-/usr/bin/docker rmi thecalcaholic/ncp-activation:embedded
+ExecStartPre=/bin/bash -c '/usr/bin/docker image load < /usr/lib/ncp/ncp-activation-img.tar.gz'
+ExecStart=/usr/bin/docker run --rm -v /usr/lib/ncp:/lib/ncp:ro -v /etc/ncp:/etc/ncp -p 80:8080 thecalcaholic/ncp-activation:embedded
