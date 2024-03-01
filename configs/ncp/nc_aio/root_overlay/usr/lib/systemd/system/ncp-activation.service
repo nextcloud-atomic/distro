@@ -1,9 +1,19 @@
 [Unit]
 Description=NCP Activation
+After=ncp-caddy.service ncp-embedded-images.service docker.service
+Requires=ncp-caddy.service docker.service
 
 [Service]
-Type=oneshot
-ConditionPathExists=!/etc/ncp/secrets.json
-ExecStartPre=-/usr/bin/docker rmi thecalcaholic/ncp-activation:embedded
-ExecStartPre=/bin/bash -c '/usr/bin/docker image load < /usr/lib/ncp/ncp-activation-img.tar.gz'
-ExecStart=/usr/bin/docker run --rm -v /usr/lib/ncp:/lib/ncp:ro -v /etc/ncp:/etc/ncp -p 80:8080 thecalcaholic/ncp-activation:embedded
+Type=notify
+NotifyAccess=all
+ConditionPathExists=!/etc/ncp/ncp.json
+Environment=CADDY_ADDRESS=unix:/run/caddy/admin.sock
+ExecStart=/usr/bin/docker run --rm \
+    -v /etc/ncp:/etc/ncp \
+    -v /var/run/docker.sock:/var/run/docker.sock:ro \
+    -v /run/caddy/admin.sock:/var/run/caddy-admin.sock:ro \
+    --network ncp-core \
+    --name ncp-activation \
+    thecalcaholic/ncp-activation:embedded
+RemainAfterExit=yes
+TimeoutStartSec=infinity

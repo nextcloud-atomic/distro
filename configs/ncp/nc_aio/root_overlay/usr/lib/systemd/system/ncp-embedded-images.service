@@ -1,0 +1,15 @@
+[Unit]
+Description=Load NCP Embedded Docker Images
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ConditionPathExists=!/etc/ncp/ncp.json
+ExecStartPre=-/usr/bin/docker rmi thecalcaholic/ncp-activation:embedded
+ExecStartPre=-/usr/bin/docker rmi caddy:2
+ExecStart=/bin/bash -c '/usr/bin/docker image load < /usr/lib/ncp/images/ncp-activation.tar.gz'
+ExecStart=/bin/bash -c '/usr/bin/docker image load < /usr/lib/ncp/images/caddy.tar.gz'
+
+[Install]
+WantedBy=multi-user.target

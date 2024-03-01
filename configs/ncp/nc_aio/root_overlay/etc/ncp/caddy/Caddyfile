@@ -1,0 +1,35 @@
+{
+  admin unix//run/caddy/admin.sock {
+  }
+  persist_config off
+}
+
+
+
+localhost, nextcloudpi.local {
+  bind 0.0.0.0
+  tls internal {
+    on_demand
+  }
+  reverse_proxy {
+    dynamic a {
+      name ncp-activation
+      port 8080
+      resolvers 127.0.0.11
+      refresh 5s
+    }
+  }
+  header Content-Type text/html
+  # TODO: Use admin-API to overwrite
+  #respond / <<HTML
+  #  <html>
+  #    <head>
+  #      <meta http-equiv="refresh" content="5">
+  #    </head>
+  #    <body>
+  #      <h2>NextcloudPi is still starting...<h2>
+  #      <p>You will automatically be forwarded when it is ready.</p>
+  #    </body>
+  #  </html>
+  #  HTML 200
+}

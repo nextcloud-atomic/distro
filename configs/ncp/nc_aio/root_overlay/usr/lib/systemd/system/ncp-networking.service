@@ -1,0 +1,11 @@
+[Unit]
+Description=NCP networking
+After=network.target network-online.target docker.service
+Requires=network-online.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/docker network create --attachable --internal ncp-core
+
+[Install]
+WantedBy=multi-user.target
