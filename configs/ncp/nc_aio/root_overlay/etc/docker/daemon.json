@@ -1,9 +1,0 @@
-{
-  "exec-opts": [
-    "native.cgroupdriver=systemd"
-  ],
-  "experimental": true,
-  "ipv6": true,
-  "fixed-cidr-v6": "fd12:3456:789a:1::/64",
-  "ip6tables": true
-}

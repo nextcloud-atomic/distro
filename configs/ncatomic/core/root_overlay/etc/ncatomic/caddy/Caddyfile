@@ -1,0 +1,28 @@
+{
+  admin unix//run/caddy/admin.sock {
+    origins localhost 127.0.0.1
+  }
+  persist_config off
+}
+
+
+
+localhost:443, nextcloudatomic.local:443 {
+  bind 0.0.0.0
+  tls internal {
+    on_demand
+  }
+
+  header Content-Type text/html
+  respond / <<HTML
+    <html>
+      <head>
+        <meta http-equiv="refresh" content="5">
+      </head>
+      <body>
+        <h2>Nextcloud Atomic is still starting...<h2>
+        <p>You will automatically be forwarded when it is ready.</p>
+      </body>
+    </html>
+    HTML 200
+}

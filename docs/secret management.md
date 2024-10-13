@@ -1,4 +1,4 @@
-# NCP Security
+# Nextcloud Atomic Security
 
 ## Secret management
 

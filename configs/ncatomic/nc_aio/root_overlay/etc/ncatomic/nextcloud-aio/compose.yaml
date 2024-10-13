@@ -1,0 +1,37 @@
+# Dummy nextcloud-aio compose.yml for pulling images
+services:
+  nextcloud-aio-apache:
+    image: nextcloud/aio-apache:latest
+
+  nextcloud-aio-database:
+    image: nextcloud/aio-postgresql:latest
+
+  nextcloud-aio-nextcloud:
+    image: nextcloud/aio-nextcloud:latest
+
+  nextcloud-aio-notify-push:
+    image: nextcloud/aio-notify-push:latest
+
+  nextcloud-aio-redis:
+    image: nextcloud/aio-redis:latest
+
+  nextcloud-aio-collabora:
+    image: nextcloud/aio-collabora:latest
+
+  nextcloud-aio-talk:
+    image: nextcloud/aio-talk:latest
+
+  nextcloud-aio-talk-recording:
+    image: nextcloud/aio-talk-recording:latest
+
+  nextcloud-aio-clamav:
+    image: nextcloud/aio-clamav:latest
+
+  nextcloud-aio-onlyoffice:
+    image: nextcloud/aio-onlyoffice:latest
+
+  nextcloud-aio-imaginary:
+    image: nextcloud/aio-imaginary:latest
+
+  nextcloud-aio-fulltextsearch:
+    image: nextcloud/aio-fulltextsearch:latest

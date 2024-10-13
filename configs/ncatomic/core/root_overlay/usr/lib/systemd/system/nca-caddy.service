@@ -1,0 +1,39 @@
+[Unit]
+Description=Caddy
+After=network.target network-online.target nca-networking.service nca-embedded-images.service
+Requires=network-online.target nca-networking.service docker.service
+
+[Service]
+Type=exec
+NotifyAccess=all
+ExecStartPre=/bin/bash -c '! test -f /etc/ncatomic/ncatomic.json || /usr/bin/docker pull docker.io/caddy:2'
+ExecStartPre=/usr/bin/mkdir -p /run/caddy
+ExecStartPre=/usr/bin/touch /run/caddy/admin.sock
+ExecStartPre=/usr/bin/chmod 0770 /run/caddy/admin.sock
+ExecStartPre=/bin/bash -c '/usr/bin/docker network inspect nca-public >/dev/null 2>&1 || /usr/bin/docker network create nca-public'
+ExecStartPre=-/usr/bin/docker rm nca-caddy
+# only pull if activated (to accelerate initial startup)
+ExecStartPre=-/bin/bash -c 'test ! -f /etc/ncatomic/ncatomic.json || /usr/bin/docker pull docker.io/caddy:2'
+ExecStartPre=/usr/bin/docker create \
+            -v nca_caddy_data:/data \
+            -v /run/caddy:/run/caddy \
+            -v /etc/ncatomic/caddy/Caddyfile:/etc/caddy/Caddyfile:ro \
+            --cap-add=NET_ADMIN \
+            -p 80:80 -p 80:80/udp \
+            -p 443:443 -p 443:443/udp \
+            --name nca-caddy \
+            docker.io/caddy:2 \
+            caddy run -c /etc/caddy/Caddyfile
+ExecStartPre=/usr/bin/docker network connect nca-core nca-caddy
+ExecStartPre=/usr/bin/docker network connect nca-public nca-caddy
+ExecStartPre=/usr/bin/docker network connect nextcloud-aio-caddy nca-caddy
+ExecStart=/usr/bin/docker start --attach nca-caddy
+ExecStop=/usr/bin/docker rm nca-caddy
+TimeoutStopSec=5s
+LimitNOFILE=1048576
+PrivateTmp=true
+ProtectSystem=full
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target

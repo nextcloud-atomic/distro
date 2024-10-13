@@ -1,0 +1,17 @@
+[Unit]
+Description=Nextcloud All-in-One (pull images)
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/ncatomic/nextcloud-aio/config.env
+WorkingDirectory=/etc/ncatomic/nextcloud-aio
+StandardOutput=journal
+StandardError=journal
+ExecStart=/usr/bin/docker compose pull
+Restart=on-failure
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

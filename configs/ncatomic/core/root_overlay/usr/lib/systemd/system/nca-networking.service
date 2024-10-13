@@ -1,0 +1,13 @@
+[Unit]
+Description=Nextcloud Atomic networking
+After=network.target network-online.target docker.service
+Requires=network-online.target docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c '/usr/bin/docker network inspect nca-core > /dev/null 2>&1 || /usr/bin/docker network create --internal nca-core'
+ExecStart=/bin/bash -c '/usr/bin/docker network inspect nextcloud-aio-caddy > /dev/null 2>&1 || /usr/bin/docker network create --internal nextcloud-aio-caddy'
+ExecStart=/bin/bash -c '/usr/bin/docker network inspect nca-public > /dev/null 2>&1 || /usr/bin/docker network create --internal nca-public'
+
+[Install]
+WantedBy=multi-user.target

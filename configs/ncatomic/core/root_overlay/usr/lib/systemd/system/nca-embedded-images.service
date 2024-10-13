@@ -1,0 +1,12 @@
+[Unit]
+Description=Load Nextcloud Atomic Embedded Container Images
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c '/usr/bin/docker image inspect "docker.io/thecalcaholic/ncatomic-activation:embedded" > /dev/null 2>&1 || /usr/bin/docker image load < /usr/lib/ncatomic/images/ncatomic-activation.tar.gz'
+ExecStart=/bin/bash -c '/usr/bin/docker image inspect "docker.io/caddy:2" > /dev/null 2>&1 || /usr/bin/docker image load < /usr/lib/ncatomic/images/caddy.tar.gz'
+
+[Install]
+WantedBy=multi-user.target
