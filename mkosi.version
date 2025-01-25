@@ -1,0 +1,7 @@
+#!/bin/sh
+
+set -e
+echo 'test'
+exit 0
+date -u +%Y%M%d%H%M
+

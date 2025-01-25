@@ -1,0 +1,8 @@
+[Unit]
+Description=Configure uid/gid maps for aio user
+
+[Service]
+Type=oneshot
+ExecStartPre=/usr/bin/touch /etc/subuid /etc/subgid
+ExecStart=/usr/bin/bash -eu -c 'grep aio /etc/subuid || /usr/sbin/usermod --add-subuids 100000-165535 --add-subgids 100000-165535 aio'
+

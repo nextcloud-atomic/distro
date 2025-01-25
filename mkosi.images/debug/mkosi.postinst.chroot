@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+#mkdir -p /var/home/ #aio/svc/nc-aio
+
+#useradd -s /bin/bash -U aio # -r -s /usr/bin/nologin
+#useradd -s /bin/bash --user-group -d /var/home/aio aio
+#echo 'aio:ncaio' | chpasswd
+#loginctl enable-linger aio
+
+update-ca-certificates --fresh
+

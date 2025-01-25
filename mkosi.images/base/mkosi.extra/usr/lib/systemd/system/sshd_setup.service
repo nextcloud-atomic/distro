@@ -1,0 +1,10 @@
+[Unit]
+Description=Setup SSH host keys
+ConditionPathExists=!/etc/ssh/host_rsa_key
+
+[Service]
+Type=oneshot
+ExecStart=ssh-keygen -A
+
+[Install]
+WantedBy=multi-user.target

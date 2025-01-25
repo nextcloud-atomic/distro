@@ -1,0 +1,38 @@
+services:
+  ncatomic-caddy:
+    image: docker.io/caddy:2
+    environment:
+      - APACHE_PORT=1080
+    ports:
+      - 80:80/tcp
+      - 80:80/udp
+      - 443:443/tcp
+      - 443:443/udp
+    volumes:
+      - nca_caddy_data:/data
+      - /run/caddy:/run/caddy
+      - /etc/ncatomic/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+    networks:
+      - public
+    command: caddy run -c /etc/caddy/Caddyfile
+    restart: unless-stopped
+    tmpfs:
+      /tmp
+    cap_add:
+      - CAP_NET_ADMIN
+  nextcloud-aio-apache:
+    ports:
+      - null:null:1080/tcp
+      - null:null:1080/udp
+    environment:
+      - APACHE_PORT=1080
+    networks:
+      - public
+
+volumes:
+  nca_caddy_data:
+    name: nca_caddy_data
+
+networks:
+  public:
+    driver: bridge

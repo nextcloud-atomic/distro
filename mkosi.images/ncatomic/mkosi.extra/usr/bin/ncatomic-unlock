@@ -1,0 +1,20 @@
+#!/bin/bash
+
+[[ $EUID == 0 ]] || {
+  echo "Must be run as root"
+  exit 1
+}
+
+read -sr -p 'Enter a nextcloud admin password' nc_admin_pw
+trap 'shred "$nc_admin_pw_plain" "$nc_domain_plain"' EXIT
+nc_admin_pw_plain="$(mktemp)"
+nc_domain_plain="$(mktemp)"
+echo -n "$nc_admin_pw" > "${nc_admin_pw_plain}"
+echo -n "localhost" > "${nc_domain_plain}"
+
+
+systemd-creds encrypt "${nc_admin_pw_plain}" /etc/ncatomic/nc-aio/credentials/nc_password.txt
+systemd-creds encrypt "${nc_domain_plain}"   /etc/ncatomic/nc-aio/credentials/nc_domain.txt
+
+echo "System unlocked."
+

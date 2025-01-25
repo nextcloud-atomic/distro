@@ -1,0 +1,5 @@
+#!/bin/bash
+
+mkdir -p mkosi.images/base/mkosi.extra/boot/EFI/
+openssl x509 -in mkosi.crt -out mkosi.images/base/mkosi.extra/boot/EFI/mkosi.der -outform DER
+

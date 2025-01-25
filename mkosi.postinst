@@ -1,0 +1,18 @@
+#!/bin/bash
+
+set -eux
+
+mkdir -p "${BUILDROOT}/usr/share/etc.default/ssh"
+cp -a "${BUILDROOT}"/etc/{nsswitch.conf,pam.d,security,alternatives,containers} "${BUILDROOT}/usr/share/etc.default/"
+#cp -a "${BUILDROOT}"/etc/{protocols,rpc,services,ethertypes,nsswitch.conf,pam.d,security,alternatives} "${BUILDROOT}/usr/share/etc.default/"
+cp -a "${BUILDROOT}/etc/ssh/sshd_config" "${BUILDROOT}/usr/share/etc.default/ssh/sshd_config"
+
+#mkdir -p "${BUILDROOT}/usr/lib/etc.default/"
+#cp -r "${BUILDROOT}/etc/pam."{d,conf} "${BUILDROOT}/usr/lib/etc.default/"
+
+#mkdir -p "${BUILDROOT}/usr/lib/etc.default/ssh/"
+#cp "${BUILDROOT}/etc/ssh/sshd_config" "${BUILDROOT}/usr/lib/etc.default/ssh/sshd_config"
+
+#mkdir -p "${BUILDROOT}/usr/share/certs.default"
+cp -ra "${BUILDROOT}/etc/ssl/certs" "${BUILDROOT}/usr/share/certs.default"
+

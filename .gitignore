@@ -1,0 +1,6 @@
+mkosi.output/
+.mkosi-private/
+mkosi.cache/
+mkosi.crt
+mkosi.key
+mkosi.der
