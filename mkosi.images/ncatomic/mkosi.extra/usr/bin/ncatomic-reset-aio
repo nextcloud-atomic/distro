@@ -1,0 +1,3 @@
+#!/bin/bash
+
+su -l -s /bin/bash -c '/usr/bin/podman-compose --in-pod 1 -f /usr/lib/ncatomic/nc-aio/compose.yaml -f /usr/lib/ncatomic/nc-aio/compose.logging.yaml -f /etc/ncatomic/nc-aio/compose.override.yaml down -v' aio
