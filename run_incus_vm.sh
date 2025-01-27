@@ -24,6 +24,13 @@ then
   #incus config device add ncatomic-test ncatomic-test-credentials disk source="${PWD}/mkosi.output/NextcloudAtomic_test.incus.credentials" path=/credentials readonly=true shift=true
 fi
 
+if ! incus storage volume info default nca-test-podman-cache
+then
+  incus storage volume create default nca-test-podman-cache
+fi
+
+incus storage volume attach default nca-test-podman-cache ncatomic-test /podman-cache
+
 incus start ncatomic-test --console
 
 #for i in {1..20}
