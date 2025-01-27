@@ -15,15 +15,17 @@ ExecStartPre=-/usr/bin/podman rm nca-caddy
 # only pull if activated (to accelerate initial startup)
 #ExecStartPre=-/bin/bash -c 'test ! -f /etc/ncatomic/ncatomic.json || /usr/bin/podman pull docker.io/caddy:2'
 ExecStartPre=/usr/bin/podman create \
-            -v nca_caddy_data:/data \
-            -v /run/caddy:/run/caddy \
-            -v /etc/ncatomic/caddy/Caddyfile:/etc/caddy/Caddyfile:ro \
-            --cap-add=NET_ADMIN \
-            -p 80:80 -p 80:80/udp \
-            -p 443:443 -p 443:443/udp \
-            --name nca-caddy \
-            docker.io/caddy:2 \
-            caddy run -c /etc/caddy/Caddyfile
+ -v nca_caddy_data:/data \
+ -v /run/caddy:/run/caddy \
+ -v /etc/ncatomic/caddy/Caddyfile:/etc/caddy/Caddyfile:ro \
+ --cap-add=NET_ADMIN \
+ -p 80:80 -p 80:80/udp \
+ -p 443:443 -p 443:443/udp \
+ --name=nca-caddy \
+ --log-driver=journald \
+ --log-opt=tag=nca-caddy \
+ docker.io/caddy:2 \
+ caddy run -c /etc/caddy/Caddyfile
 #ExecStartPre=/usr/bin/podman network connect nca-core nca-caddy
 #ExecStartPre=/usr/bin/podman network connect nca-public nca-caddy
 #ExecStartPre=/usr/bin/podman network connect nextcloud-aio-caddy nca-caddy

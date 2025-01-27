@@ -9,22 +9,41 @@ AssertPathExists=/etc/ncatomic/nc-aio/nc-aio.env
 Type=simple
 EnvironmentFile=/etc/ncatomic/nc-aio/nc-aio.env
 EnvironmentFile=/usr/lib/ncatomic/nc-aio/compose/podman.env
+EnvironmentFile=-/etc/ncatomic/nc-aio/user-config.env
 
 LoadCredentialEncrypted=nc_domain.txt:/etc/ncatomic/nc-aio/credentials/nc_domain.txt
 LoadCredentialEncrypted=nc_password.txt:/etc/ncatomic/nc-aio/credentials/nc_password.txt
 Environment=NEXTCLOUD_PASSWORD_SECRET=%d/nc_password.txt
 Environment=NC_DOMAIN_SECRET=%d/nc_domain.txt
 
-ExecStartPre=/bin/bash -c 'export NC_DOMAIN="$(cat "${NC_DOMAIN_SECRET}")"; export NEXTCLOUD_PASSWORD="$(cat "${NEXTCLOUD_PASSWORD_SECRET}")"; /usr/bin/podman-compose --verbose --podman-args "--log-level debug" --in-pod 1 -f /etc/ncatomic/nc-aio/compose.yaml up --no-start'
+ExecStartPre=-/usr/bin/podman pod stop pod_nc-aio
+ExecStartPre=-/usr/bin/podman pod rm pod_nc-aio
+ExecStartPre=/usr/bin/bash -eux -o pipefail -c 'export NC_DOMAIN="$(cat "${NC_DOMAIN_SECRET}")";\
+ export NEXTCLOUD_PASSWORD="$(cat "${NEXTCLOUD_PASSWORD_SECRET}")";\
+ export HOST_IP="$(podman run --rm alpine sh -c "grep 'host.containers.internal' /etc/hosts" | cut -d'"$'\t'"' -f1)";\
+ /usr/bin/podman run --rm alpine sh -c "grep 'host.containers.internal' /etc/hosts";\
+ /usr/bin/podman-compose --in-pod 1\
+ --podman-run-args="--add-host=nextcloudatomic.local:$${HOST_IP?}"\
+ -f /usr/lib/ncatomic/nc-aio/compose.yaml\
+ -f /usr/lib/ncatomic/nc-aio/compose.logging.yaml\
+ -f /etc/ncatomic/nc-aio/compose.override.yaml\
+ up --no-start'
 ExecStartPre=/usr/bin/podman pod start pod_nc-aio
-ExecStart=/usr/bin/podman-compose wait
-ExecStop=/usr/bin/podman-compose down
-ExecStop=/usr/bin/podman pod stop pod_nc-aio
-ExecStop=/usr/bin/podman pod rm pod_nc-aio
+ExecStart=/usr/bin/podman-compose\
+ -f /usr/lib/ncatomic/nc-aio/compose.yaml\
+ -f /usr/lib/ncatomic/nc-aio/compose.logging.yaml\
+ -f /etc/ncatomic/nc-aio/compose.override.yaml\
+ wait
+ExecStop=/usr/bin/podman-compose\
+ -f /usr/lib/ncatomic/nc-aio/compose.yaml\
+ -f /usr/lib/ncatomic/nc-aio/compose.logging.yaml\
+ -f /etc/ncatomic/nc-aio/compose.override.yaml\
+ down
+ExecStop=-/usr/bin/podman pod stop pod_nc-aio
+ExecStop=-/usr/bin/podman pod rm pod_nc-aio
 TimeoutStartSec=1200
 
 # Security & Isolation
-WorkingDirectory=/etc/ncatomic/nc-aio
 #StateDirectory=/var/lib/ncatomic/internal/nc-aio/
 User=aio
 Group=aio
