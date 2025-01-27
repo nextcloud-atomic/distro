@@ -11,3 +11,5 @@ ExecStartPre=/bin/bash -c 'START="$(date +%%s)"; while [[ ! -f /etc/ncatomic/nc-
 ExecStart=/bin/bash -c '/usr/lib/ncatomic/nc-aio/nc-aio.env.sh > /etc/ncatomic/nc-aio/nc-aio.env'
 TimeoutStartSec=14460
 
+[Install]
+WantedBy=multi-user.target

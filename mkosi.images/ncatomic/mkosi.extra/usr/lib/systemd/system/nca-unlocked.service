@@ -8,5 +8,4 @@ RefuseManualStart=true
 [Service]
 Type=oneshot
 RemainAfterExit=true
-ExecStart=bash -c 'test -f /etc/ncatomic/nc-aio/credentials/nc_domain.txt || exit 1; test -f /etc/ncatomic/nc-aio/credentials/nc_password.txt || exit 1;'
-
+ExecStart=/usr/bin/bash -c 'test -f /etc/ncatomic/nc-aio/credentials/nc_domain.txt || exit 1; test -f /etc/ncatomic/nc-aio/credentials/nc_password.txt || exit 1;'

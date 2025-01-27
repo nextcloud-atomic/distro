@@ -59,6 +59,3 @@ ReadWritePaths=/var/data/ncatomic/nc-aio
 ExecPaths=/usr/bin /bin
 StandardOutput=journal
 StandardError=journal
-
-[Install]
-WantedBy=default.target
