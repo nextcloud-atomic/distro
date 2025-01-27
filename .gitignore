@@ -4,3 +4,4 @@ mkosi.cache/
 mkosi.crt
 mkosi.key
 mkosi.der
+.idea/

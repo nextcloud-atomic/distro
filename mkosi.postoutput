@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+set -eu
 
 #creationtime="$(date +%s)"
 #default_metadata="architecture: ${ARCHITECTURE}

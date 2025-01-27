@@ -1,9 +1,9 @@
 #!/bin/bash
 
-set -eux
+set -eu
 
 mkdir -p "${BUILDROOT}/usr/share/etc.default/ssh"
-cp -a "${BUILDROOT}"/etc/{nsswitch.conf,pam.d,security,alternatives,containers} "${BUILDROOT}/usr/share/etc.default/"
+cp -a "${BUILDROOT}"/etc/{nsswitch.conf,pam.d,security,alternatives,containers,nftables.conf,ca-certificates.conf} "${BUILDROOT}/usr/share/etc.default/"
 #cp -a "${BUILDROOT}"/etc/{protocols,rpc,services,ethertypes,nsswitch.conf,pam.d,security,alternatives} "${BUILDROOT}/usr/share/etc.default/"
 cp -a "${BUILDROOT}/etc/ssh/sshd_config" "${BUILDROOT}/usr/share/etc.default/ssh/sshd_config"
 
