@@ -11,6 +11,5 @@ localhost:443, nextcloudatomic.local:443 {
 		on_demand
 	}
 
-	header Content-Type text/html
 	reverse_proxy host.containers.internal:1080
 }
