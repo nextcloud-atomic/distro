@@ -1,6 +1,0 @@
-#!/bin/bash
-set -eu
-
-wget https://github.com/nextcloud/all-in-one/raw/refs/heads/main/manual-install/latest.yml -O "${SRCDIR}/mkosi.images/ncatomic/mkosi.extra/usr/lib/ncatomic/nc-aio/etc/compose.yaml"
-#wget https://github.com/nextcloud/all-in-one/raw/refs/heads/main/manual-install/latest.yml -O "${BUILDROOT}/var/svc/aio/nc-aio/podman-compose.yml"
-
