@@ -4,7 +4,7 @@ ConditionPathExists=!/etc/ssh/host_rsa_key
 
 [Service]
 Type=oneshot
-ExecStart=ssh-keygen -A
+ExecStart=/usr/bin/ssh-keygen -A
 
 [Install]
 WantedBy=multi-user.target

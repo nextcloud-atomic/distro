@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -euo pipefail
+
+mkdir -p mkosi.images/01-base/mkosi.extra/boot/EFI/
+openssl x509 -in mkosi.crt -out mkosi.images/01-base/mkosi.extra/boot/EFI/mkosi.der -outform DER

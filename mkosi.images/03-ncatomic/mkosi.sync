@@ -7,11 +7,11 @@ then
   exit 0
 fi
 
-COMP_FILE="${SRCDIR}/mkosi.images/ncatomic/mkosi.extra/usr/lib/ncatomic/nc-aio/compose.yaml"
-COMP_FILE_LOGGING="${SRCDIR}/mkosi.images/ncatomic/mkosi.extra/usr/lib/ncatomic/nc-aio/compose.logging.yaml"
+COMP_FILE="${SRCDIR}/mkosi.images/03-ncatomic/mkosi.extra/usr/lib/ncatomic/nc-aio/compose.yaml"
+COMP_FILE_LOGGING="${SRCDIR}/mkosi.images/03-ncatomic/mkosi.extra/usr/lib/ncatomic/nc-aio/compose.logging.yaml"
 
 curl https://raw.githubusercontent.com/nextcloud/all-in-one/refs/heads/main/manual-install/latest.yml > "${COMP_FILE}"
-python3 "${SRCDIR}/mkosi.images/ncatomic/parse_compose.py" "${COMP_FILE}"
+python3 "${SRCDIR}/mkosi.images/03-ncatomic/parse_compose.py" "${COMP_FILE}"
 
 LOGGING_CONF="services:"
 while read -r -u 3 svc
