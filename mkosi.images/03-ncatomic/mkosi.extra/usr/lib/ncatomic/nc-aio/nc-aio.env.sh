@@ -28,7 +28,7 @@ COLLABORA_SECCOMP_POLICY=--o:security.seccomp=true          # Changing the value
 INSTALL_LATEST_MAJOR=no        # Setting this to yes will install the latest Major Nextcloud version upon the first installation
 NEXTCLOUD_ADDITIONAL_APKS=imagemagick        # This allows to add additional packages to the Nextcloud container permanently. Default is imagemagick but can be overwritten by modifying this value.
 NEXTCLOUD_ADDITIONAL_PHP_EXTENSIONS=imagick        # This allows to add additional php extensions to the Nextcloud container permanently. Default is imagick but can be overwritten by modifying this value.
-NEXTCLOUD_DATADIR=nextcloud_aio_nextcloud_data          # You can change this to e.g. "/mnt/ncdata" to map it to a location on your host. It needs to be adjusted before the first startup and never afterwards!
+NEXTCLOUD_DATADIR=/var/data/ncatomic/nc-aio/nc-files/          # You can change this to e.g. "/mnt/ncdata" to map it to a location on your host. It needs to be adjusted before the first startup and never afterwards!
 NEXTCLOUD_MAX_TIME=3600          # This allows to change the upload time limit of the Nextcloud container
 NEXTCLOUD_MEMORY_LIMIT=512M          # This allows to change the PHP memory limit of the Nextcloud container
 NEXTCLOUD_MOUNT=/var/data/ncatomic/nc-aio/mnt/          # This allows the Nextcloud container to access directories on the host. It must never be equal to the value of NEXTCLOUD_DATADIR!
