@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -eu
+
+mkdir -p "${BUILDROOT}/usr/share/extensions.default/confexts"
+cp "${ETC_CONFEXT_PATH}" "${BUILDROOT}/usr/share/extensions.default/confexts/etc-default.raw"

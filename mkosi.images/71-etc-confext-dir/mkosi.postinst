@@ -1,0 +1,5 @@
+#!/bin/bash
+
+set -eu
+
+mv "${BUILDROOT}/etc" "${BUILDROOT}/etc-src"

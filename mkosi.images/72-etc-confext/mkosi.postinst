@@ -1,0 +1,8 @@
+#!/bin/bash
+set -eux
+
+mkdir -p "${BUILDROOT}/etc"/{ssh,ssl}
+cp -a "${BUILDROOT}/etc-src"/{nsswitch.conf,pam.d,security,alternatives,nftables.conf,ca-certificates.conf} "${BUILDROOT}/etc/"
+cp -a "${BUILDROOT}/etc-src/ssh/sshd_config" "${BUILDROOT}/etc/ssh/sshd_config"
+cp -ra "${BUILDROOT}/etc-src/ssl/certs" "${BUILDROOT}/etc/ssl/certs"
+cp -a "${BUILDROOT}/etc-src/containers" "${BUILDROOT}/etc/"

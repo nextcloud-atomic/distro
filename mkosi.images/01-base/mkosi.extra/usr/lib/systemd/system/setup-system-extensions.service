@@ -1,0 +1,23 @@
+[Unit]
+Description=Sets up prerequisites for system and conf extensions
+DefaultDependencies=no
+Requires=system.slice local-fs.target
+After=local-fs.target
+Before=systemd-confext.service systemd-sysext.service systemd-tmpfiles-setup.service
+
+ConditionPathExists=!/var/lib/extensions.mutable/etc
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/bin/bash -eu -c '\
+mkdir -p /etc/verity.d;\
+openssl x509 -in /boot/EFI/mkosi.der -out /etc/verity.d/mkosi.crt -outform PEM;\
+mkdir -p /var/lib/confexts; mkdir -p /var/lib/sysexts;\
+! [[ -d /usr/share/extensions.default/confexts ]] || cp -a /usr/share/extensions.default/confexts/* /var/lib/confexts;\
+! [[ -d /usr/share/extensions.default/sysexts ]] || cp -a /usr/share/extensions.default/sysexts/* /var/lib/sysexts;\
+mkdir -p /var/lib/extensions.mutable;\
+ln -s /etc /var/lib/extensions.mutable/etc;'
+
+[Install]
+WantedBy=sysinit.target
