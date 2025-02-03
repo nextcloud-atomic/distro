@@ -1,0 +1,12 @@
+[Unit]
+Description=Check if nc atomic has been successfully unlocked
+Wants=nextcloud-all-in-one.service
+Before=nextcloud-all-in-one.service
+RefuseManualStart=true
+# ConsistsOf=ncatomic_unlock_from_credentials.service ncatomic_unlock_from_web.service <- reverse BindsTo
+Conflicts=nca-unlock-from-credentials.service nca-unlock-from-web.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+ExecStart=/usr/bin/bash -c 'test -f /etc/ncatomic/nc-aio/credentials/nc_domain.txt || exit 1; test -f /etc/ncatomic/nc-aio/credentials/nc_password.txt || exit 1;'

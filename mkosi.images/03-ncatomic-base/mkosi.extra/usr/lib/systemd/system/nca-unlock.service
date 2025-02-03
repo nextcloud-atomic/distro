@@ -1,0 +1,15 @@
+[Unit]
+Description=Parent Service for nca-unlock-from-credentials and nca-unlock-from-web
+Wants=nca-unlock-from-credentials.service nca-unlock-from-web.service
+# ConsistsOf=ncatomic_unlock_from_credentials.service ncatomic_unlock_from_web.service <- reverse PartOf
+OnSuccess=nca-unlocked.service
+FailureAction=reboot
+
+[Service]
+Type=simple
+ExecStartPre=/usr/bin/bash -c 'START="$(date +%%s)"; while [[ ! -f /etc/ncatomic/nc-aio/credentials/nc_domain.txt ]] && [[ ! -f /etc/ncatomic/nc-aio/credentials/nc_password.txt ]]; do NOW="$(date +%%s)"; [[ $(( NOW - START )) -le 14400 ]] || { echo "Timeout reached."; sleep 30; exit 1; }; sleep 3; done;'
+ExecStart=/usr/bin/true
+TimeoutStartSec=14460
+
+[Install]
+WantedBy=multi-user.target

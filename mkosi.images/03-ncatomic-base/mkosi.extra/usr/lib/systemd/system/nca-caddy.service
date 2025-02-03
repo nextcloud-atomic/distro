@@ -1,0 +1,38 @@
+[Unit]
+Description=Caddy
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=notify
+NotifyAccess=all
+ExecStartPre=/usr/bin/touch /run/caddy/admin.sock
+ExecStartPre=/usr/bin/chmod 0770 /run/caddy/admin.sock
+ExecStartPre=-/usr/bin/podman rm nca-caddy
+ExecStartPre=/usr/bin/podman create \
+ -v nca_caddy_data:/data \
+ -v /run/caddy:/run/caddy \
+ -v /usr/lib/ncatomic/caddy/Caddyfile:/etc/caddy/Caddyfile:ro \
+ --cap-add=NET_ADMIN \
+ -p 80:80 -p 80:80/udp \
+ -p 443:443 -p 443:443/udp \
+ --name=nca-caddy \
+ --log-driver=journald \
+ --log-opt=tag=nca-caddy \
+ docker.io/caddy:2 \
+ caddy run -c /etc/caddy/Caddyfile
+ExecStart=/usr/bin/podman start --attach nca-caddy
+ExecStop=/usr/bin/podman rm nca-caddy
+TimeoutStopSec=5s
+LimitNOFILE=1048576
+PrivateTmp=disconnected
+ProtectSystem=strict
+KeyringMode=private
+ReadWritePaths=/var/lib/containers /run/caddy /run
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
