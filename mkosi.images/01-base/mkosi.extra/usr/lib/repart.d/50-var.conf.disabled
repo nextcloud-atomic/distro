@@ -1,0 +1,8 @@
+# TODO: Reenable once https://github.com/systemd/systemd/issues/31071 is fixed
+[Partition]
+Type=var
+Format=btrfs
+SizeMinBytes=1G
+Encrypt=key-file+tpm2
+Weight=4
+FactoryReset=yes
