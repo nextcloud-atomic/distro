@@ -7,11 +7,12 @@ Before=systemd-confext.service systemd-sysext.service systemd-tmpfiles-setup.ser
 Requires=boot.automount
 
 [Service]
+Environment=SYSTEMD_LOG_LEVEL=debug
 Type=oneshot
 RemainAfterExit=true
-ExecStartPre=/usr/bin/mkdir -p /etc/verity.d /var/lib/confexts /var/lib/extensions /var/lib/extensions.mutable
+ExecStartPre=/usr/bin/mkdir -p /etc/verity.d /var/lib/confexts/ /var/lib/extensions /var/lib/extensions.mutable
 ExecStartPre=-/usr/bin/bash -eu -c '/usr/bin/test -f /etc/verity.d/mkosi.crt || /usr/bin/openssl x509 -in /boot/EFI/mkosi.der -out /etc/verity.d/mkosi.crt -outform PEM'
-ExecStartPre=/usr/bin/bash -eu -c '/usr/bin/test -L /var/lib/extensions.mutable/etc || /usr/bin/ln -s /etc /var/lib/extensions.mutable/etc'
+#ExecStartPre=/usr/bin/bash -eu -c '/usr/bin/test -L /var/lib/extensions.mutable/etc || /usr/bin/ln -s /var/lib/confexts/override/etc /var/lib/extensions.mutable/etc'
 ExecStart=/usr/bin/bash -eux -o pipefail -c '\
 for ext in /usr/share/extensions.default/confexts/*; do [[ "$${ext}" == "/usr/share/extensions.default/confexts/*" ]] || cp "$${ext}" /var/lib/confexts/; done;\
 for ext in /usr/share/extensions.default/extensions/*; do [[ "$${ext}" == "/usr/share/extensions.default/extensions/*" ]] || cp "$${ext}" /var/lib/extensions/; done;'
