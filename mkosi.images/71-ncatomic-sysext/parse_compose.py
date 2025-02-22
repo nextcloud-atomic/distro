@@ -14,6 +14,13 @@ for name, svc in compose["services"].items():
             new_vars.append(f"{env_var}=${'{'}{env_var}{'}'}")
         else:
             new_vars.append(env_var)
+    if name == "nextcloud-aio-nextcloud":
+        new_vols = []
+        for vol in svc["volumes"]:
+            if vol.startswith("nextcloud_aio_nextcloud:"):
+                vol = vol.replace("nextcloud_aio_nextcloud:", "${NEXTCLOUD_INSTALLDIR}:", 1)
+            new_vols.append(vol)
+        compose["services"][name]["volumes"] = new_vols
     compose["services"][name]["environment"] = new_vars
 
 with open(compose_path, "w") as f:
