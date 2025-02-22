@@ -1,11 +1,12 @@
 [Unit]
 Description=Nextcloud All in One
-After=nca-unlocked.service podman-aio-setup.service
 Requires=podman-aio-setup.service
 Requisite=nca-unlocked.service
+After=nca-unlocked.service podman-aio-setup.service
 
 [Service]
-Type=exec
+Type=notify
+NotifyAccess=all
 EnvironmentFile=/usr/lib/ncatomic/nc-aio/defaults.env
 EnvironmentFile=-/etc/ncatomic/nc-aio/user-config.env
 EnvironmentFile=/usr/lib/ncatomic/nc-aio/compose/podman.env
@@ -26,7 +27,6 @@ ExecStartPre=/usr/bin/bash -eux -o pipefail -c '\
  export NC_DOMAIN="$(cat "${NC_DOMAIN_SECRET}")";\
  export NEXTCLOUD_PASSWORD="$(cat "${NEXTCLOUD_PASSWORD_SECRET}")";\
  export HOST_IP="$(podman run --rm alpine sh -c "grep 'host.containers.internal' /etc/hosts" | cut -d'"$'\t'"' -f1)";\
- export NEXTCLOUD_DATADIR=/var/lib/nc-files;\
  profile_args=();\
  for profile_name in CLAMAV COLLABORA FULLTEXTSEARCH IMAGINARY ONLYOFFICE TALK TALK_RECORDING WHITEBOARD;\
  do tmp="$${profile_name}_ENABLED"; [[ "$${!tmp}" != "yes" ]] || { profile_name="$${profile_name,,}"; profile_args+=(--profile "$${profile_name//_/-}"); }; done;\
@@ -66,7 +66,6 @@ PrivateTmp=disconnected
 ReadWritePaths=/var/data/ncatomic/nc-aio
 #ReadOnlyPaths=/etc/ncatomic/nc-aio /usr/lib/ncatomic/nc-aio/ /bin /usr/bin
 ExecPaths=/usr/bin /bin
-StateDirectory=nc-files
 StateDirectoryMode=0700
 StandardOutput=journal
 StandardError=journal
