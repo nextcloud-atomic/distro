@@ -46,14 +46,14 @@ ExecStart=/usr/bin/podman-compose\
  -f /usr/lib/ncatomic/nc-aio/compose.logging.yaml\
  -f /etc/ncatomic/nc-aio/compose.override.yaml\
  wait
-ExecStop=/usr/bin/podman-compose\
+ExecStopPost=/usr/bin/podman-compose\
  -f /usr/lib/ncatomic/nc-aio/compose.yaml\
  -f /usr/lib/ncatomic/nc-aio/compose.logging.yaml\
  -f /etc/ncatomic/nc-aio/compose.override.yaml\
  down
-ExecStop=-/usr/bin/podman pod stop pod_nc-aio
-ExecStop=-/usr/bin/podman pod rm pod_nc-aio
-TimeoutStartSec=1200
+ExecStopPost=-/usr/bin/podman pod stop pod_nc-aio
+ExecStopPost=-/usr/bin/podman pod rm pod_nc-aio
+TimeoutStartSec=1800
 
 # Security & Isolation
 #StateDirectory=/var/lib/ncatomic/internal/nc-aio/
