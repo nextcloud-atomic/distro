@@ -1,0 +1,16 @@
+[Unit]
+
+
+[Service]
+Type=notify
+NotifyAccess=all
+Environment=HOST=0.0.0.0
+Environment=PORT=3000
+ExecStart=/usr/share/nca-web/ncatomic-web
+WorkingDirectory=/usr/share/nca-web
+#TODO: necessary?
+#BindPaths=/var/run/dbus
+BindReadOnlyPaths=/var/log/journal
+
+[Install]
+WantedBy=multi-user.target
