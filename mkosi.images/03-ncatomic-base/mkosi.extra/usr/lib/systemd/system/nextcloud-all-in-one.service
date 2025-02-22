@@ -36,7 +36,10 @@ ExecStartPre=/usr/bin/bash -eux -o pipefail -c '\
  -f /usr/lib/ncatomic/nc-aio/compose.yaml\
  -f /usr/lib/ncatomic/nc-aio/compose.logging.yaml\
  -f /etc/ncatomic/nc-aio/compose.override.yaml\
- up --no-start'
+ up --no-start;\
+if [ -f "${NEXTCLOUD_INSTALLDIR}/config/config.php" ]; \
+then sed -i -e "s|^\s*'"'"'dbpassword'"'"' => '"'"'.*'"'"',\s*$|  '"'"'dbpassword'"'"' => '"'"'$${DATABASE_PASSWORD?}'"'"'|"; \
+fi'
 ExecStartPre=/usr/bin/podman pod start pod_nc-aio
 ExecStart=/usr/bin/podman-compose\
  -f /usr/lib/ncatomic/nc-aio/compose.yaml\
