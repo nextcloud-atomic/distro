@@ -32,6 +32,7 @@ ReadWritePaths=/var/lib/containers /run/caddy /run
 AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
 StandardOutput=journal
 StandardError=journal
+LogNamespace=ncatomic
 
 [Install]
 WantedBy=multi-user.target

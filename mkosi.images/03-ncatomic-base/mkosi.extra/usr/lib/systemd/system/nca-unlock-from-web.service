@@ -6,3 +6,4 @@ PartOf=nca-unlock.service
 Type=simple
 ExecStart=bash -c 'while true; do echo "web unlock is not implemented yet"; sleep 30; done'
 
+LogNamespace=ncatomic

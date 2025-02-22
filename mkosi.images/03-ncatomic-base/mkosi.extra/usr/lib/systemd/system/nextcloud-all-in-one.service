@@ -70,3 +70,4 @@ StateDirectory=nc-files
 StateDirectoryMode=0700
 StandardOutput=journal
 StandardError=journal
+LogNamespace=ncatomic

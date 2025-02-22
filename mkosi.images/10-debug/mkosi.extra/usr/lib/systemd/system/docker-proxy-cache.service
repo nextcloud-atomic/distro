@@ -31,6 +31,7 @@ ExecStartPre=-/usr/bin/bash -c '/usr/bin/podman run\
  docker.io/rpardini/docker-registry-proxy:latest'
 InaccessiblePaths=/etc/containers/containers.conf.d/docker-proxy-cache.conf
 TemporaryFileSystem=/usr/local/share/ca-certificates
+LogNamespace=ncatomic
 
 [Install]
 WantedBy=multi-user.target
