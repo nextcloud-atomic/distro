@@ -1,16 +1,22 @@
 [Unit]
-
+Requires=nca-caddy.service nca-occd.service
+After=nca-caddy.service nca-occd.service
 
 [Service]
 Type=notify
 NotifyAccess=all
-Environment=HOST=0.0.0.0
+Environment=HOST=127.0.0.1
 Environment=PORT=3000
+Environment=CADDY_ADMIN_SOCKET=/run/caddy/admin.sock
+Environment=OCC_SERVER_SOCKET=/run/ncatomic/occ/occ.sock
+Environment=CONFIG_PATH=/etc/ncatomic
 ExecStart=/usr/share/nca-web/ncatomic-web
 WorkingDirectory=/usr/share/nca-web
 #TODO: necessary?
 #BindPaths=/var/run/dbus
-BindReadOnlyPaths=/var/log/journal
+BindReadOnlyPaths=/var/log/journal /var/lib/systemd
+BindPaths=/run/caddy/admin.sock /run/ncatomic/occ/occ.sock /etc/ncatomic
+LogNamespace=ncatomic
 
 [Install]
 WantedBy=multi-user.target
