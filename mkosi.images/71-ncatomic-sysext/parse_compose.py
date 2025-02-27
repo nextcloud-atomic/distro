@@ -14,7 +14,7 @@ for name, svc in compose["services"].items():
             new_vars.append(f"{env_var}=${'{'}{env_var}{'}'}")
         else:
             new_vars.append(env_var)
-    if name == "nextcloud-aio-nextcloud":
+    if name in ["nextcloud-aio-nextcloud", "nextcloud-aio-apache"]:
         new_vols = []
         for vol in svc["volumes"]:
             if vol.startswith("nextcloud_aio_nextcloud:"):

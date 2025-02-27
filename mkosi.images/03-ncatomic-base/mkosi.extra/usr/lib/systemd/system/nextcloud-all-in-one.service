@@ -20,7 +20,7 @@ Environment=ENV_OVERRIDE_SECRET=none
 
 ExecStartPre=-/usr/bin/podman pod stop pod_nc-aio
 ExecStartPre=-/usr/bin/podman pod rm pod_nc-aio
-ExecStartPre=/usr/bin/bash -eux -o pipefail -c '\
+ExecStartPre=/usr/bin/bash -eu -o pipefail -c '\
  . /usr/lib/ncatomic/nc-aio/secrets.sh; \
  [[ -n "$${WHITEBOARD_SECRET}" ]] || { echo "Error: Secrets not set (WHITEBOARD_SECRET is empty)"; exit 1; };\
  ! [[ -f "$ENV_OVERRIDE_SECRET" ]] || . "${ENV_OVERRIDE_SECRET}";\

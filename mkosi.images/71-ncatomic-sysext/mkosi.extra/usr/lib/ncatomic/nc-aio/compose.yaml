@@ -59,7 +59,7 @@ services:
     - /home/www-data
     user: '33'
     volumes:
-    - nextcloud_aio_nextcloud:/var/www/html:ro
+    - ${NEXTCLOUD_INSTALLDIR}:/var/www/html:ro
     - nextcloud_aio_apache:/mnt/data:rw
   nextcloud-aio-clamav:
     cap_drop:
