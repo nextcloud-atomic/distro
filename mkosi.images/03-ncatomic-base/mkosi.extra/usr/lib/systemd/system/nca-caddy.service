@@ -14,6 +14,7 @@ ExecStartPre=/usr/bin/podman create \
  -v /run/caddy:/run/caddy \
  -v /usr/lib/ncatomic/caddy/Caddyfile:/etc/caddy/Caddyfile:ro \
  --cap-add=NET_ADMIN \
+ --network=host \
  -p 80:80 -p 80:80/udp \
  -p 443:443 -p 443:443/udp \
  --name=nca-caddy \
