@@ -1,0 +1,9 @@
+[Unit]
+
+[Service]
+Environment=OCC_SOCKET_PATH=/run/ncatomic/occ/occ.sock
+#ExecStartPre=/usr/bin/mkdir -p /run/ncatomic/occ/
+ExecStart=/usr/bin/occd
+WorkingDirectory=/var/data/ncatomic/nc-aio
+User=aio
+LogNamespace=ncatomic
