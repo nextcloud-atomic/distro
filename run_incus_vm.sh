@@ -12,7 +12,7 @@ incus init --vm mkosi/ncatomic-vm ncatomic-test -c security.secureboot=false -c 
 incus config device add ncatomic-test vtpm tpm
 
 qemu_credential_args=()
-if [[ -d "${PWD}/mkosi.output/NextcloudAtomic_test.incus.credentials" ]]
+if [[ -d "${PWD}/mkosi.output/NextcloudAtomic_test.incus.credentials" ]] && [[ " $* " =~ " --with-credentials " ]]
 then
   for f in "${PWD}/mkosi.output/NextcloudAtomic_test.incus.credentials"/*
   do
