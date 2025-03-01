@@ -1,0 +1,76 @@
+[Unit]
+Description=Nextcloud All in One
+Requires=podman-aio-setup.service
+Requisite=nca-unlocked.service
+After=nca-unlocked.service podman-aio-setup.service
+
+[Service]
+Type=notify
+NotifyAccess=all
+EnvironmentFile=/usr/lib/ncatomic/nc-aio/defaults.env
+EnvironmentFile=-/etc/ncatomic/nc-aio/user-config.env
+EnvironmentFile=/usr/lib/ncatomic/nc-aio/compose/podman.env
+
+LoadCredentialEncrypted=nc_domain.txt:/etc/ncatomic/nc-aio/credentials/nc_domain.txt
+LoadCredentialEncrypted=nc_password.txt:/etc/ncatomic/nc-aio/credentials/nc_password.txt
+#LoadCredentialEncrypted=-nc_env_override.txt:/etc/ncatomic/nc-aio/credentials/env_override.txt
+Environment=NEXTCLOUD_PASSWORD_SECRET=%d/nc_password.txt
+Environment=NC_DOMAIN_SECRET=%d/nc_domain.txt
+Environment=ENV_OVERRIDE_SECRET=none
+
+ExecStartPre=-/usr/bin/podman pod stop pod_nc-aio
+ExecStartPre=-/usr/bin/podman pod rm pod_nc-aio
+ExecStartPre=/usr/bin/bash -eu -o pipefail -c '\
+ . /usr/lib/ncatomic/nc-aio/secrets.sh; \
+ [[ -n "$${WHITEBOARD_SECRET}" ]] || { echo "Error: Secrets not set (WHITEBOARD_SECRET is empty)"; exit 1; };\
+ ! [[ -f "$ENV_OVERRIDE_SECRET" ]] || . "${ENV_OVERRIDE_SECRET}";\
+ export NC_DOMAIN="$(cat "${NC_DOMAIN_SECRET}")";\
+ export NEXTCLOUD_PASSWORD="$(cat "${NEXTCLOUD_PASSWORD_SECRET}")";\
+ export HOST_IP="$(podman run --rm alpine sh -c "grep 'host.containers.internal' /etc/hosts" | cut -d'"$'\t'"' -f1)";\
+ profile_args=();\
+ for profile_name in CLAMAV COLLABORA FULLTEXTSEARCH IMAGINARY ONLYOFFICE TALK TALK_RECORDING WHITEBOARD;\
+ do tmp="$${profile_name}_ENABLED"; [[ "$${!tmp}" != "yes" ]] || { profile_name="$${profile_name,,}"; profile_args+=(--profile "$${profile_name//_/-}"); }; done;\
+ /usr/bin/podman-compose --in-pod 1\
+ --podman-run-args="--add-host=nextcloudatomic.local:$${HOST_IP?}"\
+ "$${profile_args[@]}"\
+ -f /usr/lib/ncatomic/nc-aio/compose.yaml\
+ -f /usr/lib/ncatomic/nc-aio/compose.logging.yaml\
+ -f /etc/ncatomic/nc-aio/compose.override.yaml\
+ up --no-start;\
+if [ -f "${NEXTCLOUD_INSTALLDIR}/config/config.php" ]; \
+then sed -i -e "s|^\s*'"'"'dbpassword'"'"' => '"'"'.*'"'"',\s*$|  '"'"'dbpassword'"'"' => '"'"'$${DATABASE_PASSWORD?}'"'"'|"; \
+fi'
+ExecStartPre=/usr/bin/podman pod start pod_nc-aio
+ExecStart=/usr/bin/podman-compose\
+ -f /usr/lib/ncatomic/nc-aio/compose.yaml\
+ -f /usr/lib/ncatomic/nc-aio/compose.logging.yaml\
+ -f /etc/ncatomic/nc-aio/compose.override.yaml\
+ wait
+ExecStopPost=/usr/bin/podman-compose\
+ -f /usr/lib/ncatomic/nc-aio/compose.yaml\
+ -f /usr/lib/ncatomic/nc-aio/compose.logging.yaml\
+ -f /etc/ncatomic/nc-aio/compose.override.yaml\
+ down
+ExecStopPost=-/usr/bin/podman pod stop pod_nc-aio
+ExecStopPost=-/usr/bin/podman pod rm pod_nc-aio
+TimeoutStartSec=1800
+
+ExtensionImages=/etc/svc-extensions/nc-aio-svc.raw
+# Security & Isolation
+#StateDirectory=/var/lib/ncatomic/internal/nc-aio/
+User=aio
+Group=aio
+#PAMName=aio
+Delegate=yes
+KeyringMode=private
+ProtectSystem=strict
+ProtectHome=no
+PrivateMounts=yes
+PrivateTmp=disconnected
+ReadWritePaths=/var/data/ncatomic/nc-aio
+#ReadOnlyPaths=/etc/ncatomic/nc-aio /usr/lib/ncatomic/nc-aio/ /bin /usr/bin
+ExecPaths=/usr/bin /bin
+StateDirectoryMode=0700
+StandardOutput=journal
+StandardError=journal
+LogNamespace=ncatomic

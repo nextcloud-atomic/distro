@@ -7,3 +7,6 @@ ExecStart=/usr/bin/occd
 WorkingDirectory=/var/data/ncatomic/nc-aio
 User=aio
 LogNamespace=ncatomic
+
+[Install]
+WantedBy=ncatomic.target

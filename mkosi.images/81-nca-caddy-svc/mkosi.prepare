@@ -1,0 +1,23 @@
+#!/usr/bin/bash
+
+set -eux -o pipefail
+
+[[ "$1" == "final" ]] || exit 0
+
+LATEST_VERSION=$(curl https://api.github.com/repos/caddyserver/caddy/releases/latest | grep tag_name | cut -d : -f2 | tr -d "v\", ")
+
+mkdir -p "$ARTIFACTDIR/caddy_2"
+curl -L "https://github.com/caddyserver/caddy/releases/download/v${LATEST_VERSION}/caddy_${LATEST_VERSION}_linux_amd64.tar.gz" > "$ARTIFACTDIR/caddy_2/caddy_2_linux_amd64.tar.gz"
+curl -L "https://github.com/caddyserver/caddy/releases/download/v${LATEST_VERSION}/caddy_${LATEST_VERSION}_linux_amd64.tar.gz.sig" > "$ARTIFACTDIR/caddy_2/caddy_2_linux_amd64.tar.gz.sig"
+curl -L "https://github.com/caddyserver/caddy/releases/download/v${LATEST_VERSION}/caddy_${LATEST_VERSION}_linux_amd64.pem" | base64 -d > "$ARTIFACTDIR/caddy_2/caddy_2_linux_amd64.pem"
+
+COSIGN_EXPERIMENTAL=1 cosign verify-blob \
+ --certificate-identity "https://github.com/caddyserver/caddy/.github/workflows/release.yml@refs/tags/v${LATEST_VERSION}" \
+ --certificate-oidc-issuer "https://token.actions.githubusercontent.com" \
+ --certificate "$ARTIFACTDIR/caddy_2/caddy_2_linux_amd64.pem" \
+ --signature "$ARTIFACTDIR/caddy_2/caddy_2_linux_amd64.tar.gz.sig" \
+ "$ARTIFACTDIR/caddy_2/caddy_2_linux_amd64.tar.gz"
+
+tar -C "$ARTIFACTDIR/caddy_2/" -xf "$ARTIFACTDIR/caddy_2/caddy_2_linux_amd64.tar.gz"
+ls -l "$ARTIFACTDIR/caddy_2"
+mv "$ARTIFACTDIR/caddy_2/caddy" "$BUILDROOT/usr/bin/caddy"

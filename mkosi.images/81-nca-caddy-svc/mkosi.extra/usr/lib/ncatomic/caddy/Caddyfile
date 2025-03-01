@@ -1,0 +1,30 @@
+{
+	admin unix//run/caddy/admin.sock {
+		origins localhost 127.0.0.1
+	}
+	persist_config off
+    default_sni nextcloudatomic.local
+    storage file_system "{$STATE_DIRECTORY}"
+
+}
+
+#localhost:443, nextcloudatomic.local:443 {
+#    bind 0.0.0.0
+#    tls internal
+#
+#    reverse_proxy * {
+#        to 127.0.0.1:3000
+#    }
+#}
+
+
+:443 {
+    bind 0.0.0.0
+    tls internal {
+        on_demand
+    }
+
+    reverse_proxy * {
+        to 127.0.0.1:3000
+    }
+}

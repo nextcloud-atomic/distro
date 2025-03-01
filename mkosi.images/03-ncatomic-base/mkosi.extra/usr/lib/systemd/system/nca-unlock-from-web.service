@@ -1,9 +1,0 @@
-[Unit]
-Description=Unlock Nextcloud Atomic from Web
-PartOf=nca-unlock.service
-
-[Service]
-Type=simple
-ExecStart=bash -c 'while true; do echo "web unlock is not implemented yet"; sleep 30; done'
-
-LogNamespace=ncatomic

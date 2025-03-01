@@ -1,0 +1,31 @@
+[Unit]
+Description=Caddy
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=notify
+NotifyAccess=all
+ExecStartPre=/usr/bin/touch /run/caddy/admin.sock
+ExecStartPre=/usr/bin/chmod 0770 /run/caddy/admin.sock
+Environment=HOME=/var/lib/caddy
+ExtensionImages=/etc/svc-extensions/nca-caddy-svc.raw
+#DynamicUser=true
+StateDirectory=caddy
+ConfigurationDirectory=caddy:/var/lib/caddy
+ExecStart=/usr/bin/caddy run -c /usr/lib/ncatomic/caddy/Caddyfile
+TimeoutStopSec=5s
+LimitNOFILE=1048576
+PrivateTmp=disconnected
+ProtectSystem=strict
+ProtectHome=read-only
+KeyringMode=private
+ReadWritePaths=/run/caddy
+AmbientCapabilities=CAP_NET_ADMIN CAP_NET_BIND_SERVICE
+StandardOutput=journal
+StandardError=journal
+LogNamespace=ncatomic
+
+[Install]
+WantedBy=ncatomic.target
+
