@@ -7,12 +7,13 @@ then
   exit 0
 fi
 
-EXTRA_TREE="${SRCDIR}/mkosi.images/71-ncatomic-sysext/mkosi.extra"
-COMP_FILE="${EXTRA_TREE}/usr/lib/ncatomic/nc-aio/compose.yaml"
-COMP_FILE_LOGGING="${EXTRA_TREE}/usr/lib/ncatomic/nc-aio/compose.logging.yaml"
+SYSEXT_EXTRA_TREE="${SRCDIR}/mkosi.images/72-nc-aio-sysext/mkosi.extra"
+SVC_IMAGE_EXTRA_TREE="${SRCDIR}/mkosi.images/83-nc-aio-svc/mkosi.extra"
+COMP_FILE="${SVC_IMAGE_EXTRA_TREE}/usr/lib/ncatomic/nc-aio/compose.yaml"
+COMP_FILE_LOGGING="${SVC_IMAGE_EXTRA_TREE}/usr/lib/ncatomic/nc-aio/compose.logging.yaml"
 
-curl https://raw.githubusercontent.com/nextcloud/all-in-one/refs/heads/main/manual-install/latest.yml > "${COMP_FILE}"
-python3 "${SRCDIR}/mkosi.images/71-ncatomic-sysext/parse_compose.py" "${COMP_FILE}" "${AIO_VERSION}"
+curl "https://raw.githubusercontent.com/nextcloud/all-in-one/refs/tags/${AIO_VERSION}/manual-install/latest.yml" > "${COMP_FILE}"
+python3 "${SRCDIR}/mkosi.images/83-nc-aio-svc/parse_compose.py" "${COMP_FILE}" "${AIO_IMAGE_TAG:-latest}"
 
 LOGGING_CONF="services:"
 while read -r -u 3 svc
@@ -39,8 +40,3 @@ do
   done <<<"$svc_env"
 done 3< <( yq -r '.services | keys' < "${COMP_FILE}" | sed -e 's/^- //g' )
 echo "${LOGGING_CONF}" > "${COMP_FILE_LOGGING}"
-
-if ! [[ -f /etc/ncatomic/nc-aio/nc-aio.env ]]
-then
-  sed 's/^/#/g' < "${EXTRA_TREE}/usr/lib/ncatomic/nc-aio/defaults.env" > "${EXTRA_TREE}/usr/lib/ncatomic/nc-aio/example.env"
-fi
