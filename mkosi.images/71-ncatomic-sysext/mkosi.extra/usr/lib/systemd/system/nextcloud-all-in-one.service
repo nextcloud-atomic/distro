@@ -11,11 +11,12 @@ EnvironmentFile=/usr/lib/ncatomic/nc-aio/defaults.env
 EnvironmentFile=-/etc/ncatomic/nc-aio/user-config.env
 EnvironmentFile=/usr/lib/ncatomic/nc-aio/compose/podman.env
 
-LoadCredentialEncrypted=nc_domain.txt:/etc/ncatomic/nc-aio/credentials/nc_domain.txt
-LoadCredentialEncrypted=nc_password.txt:/etc/ncatomic/nc-aio/credentials/nc_password.txt
+#LoadCredentialEncrypted=nc_domain.txt:/etc/ncatomic/nc-aio/credentials/nc_domain.txt
+#LoadCredentialEncrypted=nc_password.txt:/etc/ncatomic/nc-aio/credentials/nc_password.txt
+LoadCredentialEncrypted=nextcloud:/etc/ncatomic/nc-aio/credentials/
 #LoadCredentialEncrypted=-nc_env_override.txt:/etc/ncatomic/nc-aio/credentials/env_override.txt
-Environment=NEXTCLOUD_PASSWORD_SECRET=%d/nc_password.txt
-Environment=NC_DOMAIN_SECRET=%d/nc_domain.txt
+Environment=NEXTCLOUD_PASSWORD_SECRET=%d/nextcloud_admin_password.txt
+Environment=NC_DOMAIN_SECRET=%d/nextcloud_domain.txt
 Environment=ENV_OVERRIDE_SECRET=none
 
 ExecStartPre=-/usr/bin/podman pod stop pod_nc-aio
@@ -30,8 +31,19 @@ ExecStartPre=/usr/bin/bash -eu -o pipefail -c '\
  profile_args=();\
  for profile_name in CLAMAV COLLABORA FULLTEXTSEARCH IMAGINARY ONLYOFFICE TALK TALK_RECORDING WHITEBOARD;\
  do tmp="$${profile_name}_ENABLED"; [[ "$${!tmp}" != "yes" ]] || { profile_name="$${profile_name,,}"; profile_args+=(--profile "$${profile_name//_/-}"); }; done;\
+ for i in {1..10};\
+ do echo "Pulling images (attempt $i/10)";\
+ /usr/bin/podman-compose\
+ "$${profile_args[@]}"\
+  -f /usr/lib/ncatomic/nc-aio/compose.yaml\
+  -f /usr/lib/ncatomic/nc-aio/compose.logging.yaml\
+  -f /etc/ncatomic/nc-aio/compose.override.yaml\
+  pull \
+  || [[ $i -lt 10 ]] \
+  || { echo "ERROR: Pulling images failed. Do you have enough disk space available?" >&2; exit 1; };\
+ done;\
  /usr/bin/podman-compose --in-pod 1\
- --podman-run-args="--add-host=nextcloudatomic.local:$${HOST_IP?}"\
+ --podman-run-args="--add-host=nextcloudatomic.local:$${HOST_IP?} --cgroups=no-conmon"\
  "$${profile_args[@]}"\
  -f /usr/lib/ncatomic/nc-aio/compose.yaml\
  -f /usr/lib/ncatomic/nc-aio/compose.logging.yaml\
@@ -66,8 +78,8 @@ KeyringMode=private
 ProtectSystem=strict
 ProtectHome=no
 PrivateMounts=yes
-PrivateTmp=disconnected
-ReadWritePaths=/var/data/ncatomic/nc-aio
+PrivateTmp=true
+ReadWritePaths=/var/data/ncatomic/nc-aio /var/home/aio
 #ReadOnlyPaths=/etc/ncatomic/nc-aio /usr/lib/ncatomic/nc-aio/ /bin /usr/bin
 ExecPaths=/usr/bin /bin
 StateDirectoryMode=0700

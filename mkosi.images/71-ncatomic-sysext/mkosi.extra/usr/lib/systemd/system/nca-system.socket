@@ -1,0 +1,13 @@
+[Unit]
+Description=Socket for nca-system.service
+
+[Socket]
+ListenStream=/run/ncatomic/nca-system.sock
+BindIPv6Only=both
+Service=nca-system.service
+SocketMode=0600
+SocketUser=root
+SocketGroup=root
+
+[Install]
+WantedBy=sockets.target
