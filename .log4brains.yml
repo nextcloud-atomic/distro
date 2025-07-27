@@ -1,0 +1,5 @@
+project:
+  name: nextcloud-atomic/distro
+  tz: Arctic/Longyearbyen
+  adrFolder: ./docs/adr
+  packages: []

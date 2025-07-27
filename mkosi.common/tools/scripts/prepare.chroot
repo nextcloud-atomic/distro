@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -eux -o pipefail
+
+
+# echo "toolstree.prepare.chroot run with args: $*"
+# sleep 20
+
+
+# go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+

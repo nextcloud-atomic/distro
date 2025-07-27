@@ -1,0 +1,9 @@
+[Unit]
+Description=Dummy service where sysexts can attach dropins
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/echo "Starting sysext services"
+
+[Install]
+WantedBy=multi-user.target

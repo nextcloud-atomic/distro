@@ -1,3 +1,6 @@
+mkosi.builddir/
+mkosi.tools/
+mkosi.podmancache
 mkosi.output/
 .mkosi-private/
 mkosi.cache/
@@ -5,3 +8,4 @@ mkosi.crt
 mkosi.key
 mkosi.der
 .idea/
+mkosi.tools.manifest

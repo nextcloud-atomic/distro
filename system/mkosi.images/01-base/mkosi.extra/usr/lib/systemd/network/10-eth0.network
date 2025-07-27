@@ -1,0 +1,12 @@
+[Match]
+Name=eth0
+
+[Network]
+DHCP=true
+
+[DHCPv4]
+UseDomains=true
+
+[DHCP]
+ClientIdentifier=mac
+

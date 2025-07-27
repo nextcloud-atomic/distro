@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+set -eux -o pipefail
+
+setup_cosign() {
+
+  echo "Setting up cosign ..."
+
+  #LATEST_VERSION=$(curl https://api.github.com/repos/sigstore/cosign/releases/latest | grep tag_name | cut -d : -f2 | tr -d "v\", ")
+  VERSION=2.5.2
+  curl -O -L "https://github.com/sigstore/cosign/releases/download/v${VERSION}/cosign-${VERSION}-1.x86_64.rpm" #> cosign.rpm
+  #echo "a75bdf5fd8b9d7e44d9718da2a3942ff8a268b1f3261fe6fedb4aca0c7cf433a  cosign-2.4.3-1.x86_64.rpm" | sha256sum -c
+  echo "c0a7b99f77a91452c76609c2773bae748177fcb3856c0e75df4cba5a7c0a58a4  cosign-${VERSION}-1.x86_64.rpm" | sha256sum -c
+  rpm -ivh cosign-"${VERSION}"-1.x86_64.rpm
+
+  echo "Done."
+}
+
+setup_xcaddy() {
+  echo "Setting up xcaddy ..."
+
+  go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+  #curl -1sLf 'https://dl.cloudsmith.io/public/caddy/xcaddy/gpg.key' | gpg --dearmor -o /tmp/caddy-xcaddy-archive-keyring.gpg
+  #rpm --import /tmp/caddy-xcaddy-archive-keyring.gpg
+  #curl -1sLf 'https://dl.cloudsmith.io/public/caddy/xcaddy/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-xcaddy.list
+  #apt-get update
+  #apt-get install -y --no-install-recommends xcaddy
+
+  echo "Done."
+}
+
+if [[ "$1" == "final" ]]
+then
+  setup_cosign
+else
+  echo "toolstree prepare script run with other args than 'final'!"
+  sleep 30
+  # setup_xcaddy
+fi
+
+#if [[ "$1" == "build" ]]
+#then
+#  setup_xcaddy_repo
+#fi

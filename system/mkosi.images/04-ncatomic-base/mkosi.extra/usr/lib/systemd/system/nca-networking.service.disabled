@@ -1,0 +1,15 @@
+[Unit]
+Description=Nextcloud Atomic networking
+After=network.target network-online.target
+Requires=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash -c '/usr/bin/podman network inspect nca-core > /dev/null 2>&1 || /usr/bin/podman network create --internal nca-core'
+ExecStart=/bin/bash -c '/usr/bin/podman network inspect nextcloud-aio-caddy > /dev/null 2>&1 || /usr/bin/podman network create --internal nextcloud-aio-caddy'
+ExecStart=/bin/bash -c '/usr/bin/podman network inspect nca-public > /dev/null 2>&1 || /usr/bin/podman network create --internal nca-public'
+User=aio
+Group=aio
+
+[Install]
+WantedBy=multi-user.target

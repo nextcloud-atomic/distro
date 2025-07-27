@@ -1,0 +1,30 @@
+#!/usr/bin/bash
+
+set -eux -o pipefail
+
+# [[ -f "${SRCDIR}/.buildcache/caddy-deps" ]] || {
+#   echo "ERROR: caddy-deps not available." >&2
+#   exit 1
+# }
+
+# exit 0
+
+export BUILDCACHE="${SRCDIR}/buildcache"
+export GOPATH="${BUILDCACHE}/go"
+mkdir -p "$GOPATH/pkg/mod"
+# export GOCACHE="$BUILDCACHE/.gocache"
+# mkdir -p "$GOCACHE"
+# export GOCACHE="$SRCDIR/.buildcache/go/.cache"
+# mkdir -p "$GOCACHE"
+
+cd /work/src/caddy
+go build .
+./caddy build-info
+cp caddy "$BUILDROOT/usr/bin/caddy"
+
+#/usr/bin/go install github.com/caddyserver/xcaddy/cmd/xcaddy@latest
+#XCADDY_SKIP_BUILD=1 "$HOME/go/bin/xcaddy" build latest \
+#  --output "$BUILDROOT/usr/bin/caddy" \
+#  --with "github.com/greenpau/caddy-security"
+#  --with "https://github.com/ggicci/caddy-jwt"
+

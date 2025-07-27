@@ -1,0 +1,83 @@
+#!/bin/bash
+set -eux
+
+#creationtime="$(date +%s)"
+#default_metadata="architecture: ${ARCHITECTURE}
+#creation_date: $creationtime
+#properties:
+#  description: Nextcloud Atomic
+#  os: ${DISTRIBUTION}
+#  release: ${RELEASE}"
+
+format="$(jq -r '.Format' < "$MKOSI_CONFIG")"
+
+if [[ "${PACKAGE_OCI}" == yes ]] && [[ "$format" == "oci" ]]
+then
+  set -x
+  cd "${OUTPUTDIR}"
+  ls -l
+  dir="$(jq -r '.Output' < "$MKOSI_CONFIG")"
+  ls -l "${dir}"
+  podman rm "mkosi/${dir}" || :;
+  tar -cf "${dir}.oci.tar" --strip-components=1 "${dir}"
+  #podman import "./${dir}.tar" mkosi-import #-q import --message "podman: importing ${OUTPUTDIR}/${dir} to local registry" "${dir}.tar" "mkosi/${dir}"
+fi
+
+if [[ "${BUILD_INCUS}" == "yes" ]] && [[ "$format" =~ ^(directory|tar)$ ]]
+then
+  set -x
+  cd "${OUTPUTDIR}"
+  tmpdir="$(mktemp -d )"
+  trap 'rm -rf "$tmpdir";' EXIT
+  out="$(jq -r '.Output' < "$MKOSI_CONFIG")"
+  if [[ "$format" == "tar" ]]
+  then
+    mkdir -p "${tmpdir}/rootfs"
+    tar -xf "$out" -C "$tmpdir/rootfs"
+  elif [[ "$format" == "directory" ]]
+  then
+    cp -ra "$out" "$tmpdir/rootfs"
+  else
+    echo "incus build not implemented for output format '$format'"
+    exit 1
+  fi
+  pushd "$tmpdir"
+
+  creationtime="$(date +%s)"
+  metadata="architecture: ${ARCHITECTURE%%-*}
+creation_date: $creationtime
+properties:
+  description: Nextcloud Atomic
+  os: ${DISTRIBUTION} ${ARCHITECTURE}
+  release: ${RELEASE}"
+  echo "${INCUS_METADATA:-"${metadata}"}" > "${tmpdir}/metadata.yaml"
+  tar -caf "${OUTPUTDIR}/${out%.tar.*}.incus.tar.gz" rootfs metadata.yaml
+
+  popd
+  MOUNTABLE_CREDENTIALS=yes
+
+  echo "Incus image generated successfully at ${OUTPUTDIR}/${out%.tar.*}.incus.tar.gz"
+fi
+
+if [[ "${MOUNTABLE_CREDENTIALS}" == "yes" ]]
+then
+  out="$(jq -r '.Output' < "$MKOSI_CONFIG")"
+  cred_dir="${OUTPUTDIR}/${out%.tar.*}.incus.credentials"
+  rm -rf "$cred_dir"
+  mkdir -p "${cred_dir}"
+
+  creds_json="$(jq -r '.Credentials' < "$MKOSI_CONFIG")"
+  if [[ "${creds_json}" != "null" && "${creds_json}" != "{}" ]]
+  then
+    while read -r cred_key
+    do
+      cred_val="$(jq -r ".\"${cred_key}\"" <<<"$creds_json")"
+      echo -n "$cred_val" > "${cred_dir}/${cred_key// /_}"
+      chmod 0600 "${cred_dir}/${cred_key// /_}"
+      chown 0:0 "${cred_dir}/${cred_key// /_}"
+      echo "(cred) ${cred_key}=${cred_val}"
+    done <<< "$(jq -r '. | keys[]' <<<"${creds_json}")"
+  fi
+
+  ssh-keygen -y -f mkosi.key > "${cred_dir}/ssh.authorized_keys.root"
+fi
