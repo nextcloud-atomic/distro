@@ -11,3 +11,4 @@ mkosi.der
 mkosi.tools.manifest
 mkosi.rootpw
 .buildcache
+/scratch
