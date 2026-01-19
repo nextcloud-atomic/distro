@@ -1,7 +1,7 @@
 [Unit]
 Requires=nca-occd.service credentials-setup.service nca-system.socket
 After=nca-occd.service credentials-setup.service nca-system.socket
-Wants=nca-caddy-svc.service
+Wants=nca-caddy.service
 
 [Service]
 Type=notify

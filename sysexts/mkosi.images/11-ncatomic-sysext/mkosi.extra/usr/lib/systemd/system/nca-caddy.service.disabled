@@ -10,7 +10,7 @@ ExecStartPre=/usr/bin/touch /run/caddy/admin.sock
 ExecStartPre=/usr/bin/chmod 0770 /run/caddy/admin.sock
 Environment=HOME=$CONFIGURATION_DIRECTORY
 RootImage=/var/lib/portables/base.raw
-ExtensionImages=/var/lib/portables/nca-caddy-svc.raw
+ExtensionImages=/var/lib/portables/nca-caddy.raw
 #DynamicUser=true
 StateDirectory=caddy
 ConfigurationDirectory=caddy

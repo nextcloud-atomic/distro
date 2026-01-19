@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-mkdir -p scratch/extensions/nca-sysoverlay/usr/lib/extension-release.d scratch/portables
+mkdir -p scratch/extensions/nca-sysoverlay/usr/lib/extension-release.d scratch/portables scratch/updates/portables scratch/updates/system scratch/updates/extensions
 
 cat > scratch/extensions/nca-sysoverlay/usr/lib/extension-release.d/extension-release.nca-sysoverlay <<'EOF'
 ID=debian

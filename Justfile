@@ -15,9 +15,9 @@ build-core target='release':
   #!/usr/bin/env bash
   set -ex
   just nca-core::build --docker "{{target}}"
-  rm -rf portables/mkosi.images/04-nca-web-svc/nca-web.extra/usr/share/ncatomic/nca-web/public || :;
-  cp -r "src/core/out/{{target}}/nca-web/public" portables/mkosi.images/04-nca-web-svc/nca-web.extra/usr/share/ncatomic/nca-web/
-  cp    "src/core/out/{{target}}/nca-web/ncatomic-web" portables/mkosi.images/04-nca-web-svc/nca-web.extra/usr/share/ncatomic/nca-web/ncatomic-web
+  rm -rf portables/mkosi.images/04-nca-web/nca-web.extra/usr/share/ncatomic/nca-web/public || :;
+  cp -r "src/core/out/{{target}}/nca-web/public" portables/mkosi.images/04-nca-web/nca-web.extra/usr/share/ncatomic/nca-web/
+  cp    "src/core/out/{{target}}/nca-web/ncatomic-web" portables/mkosi.images/04-nca-web/nca-web.extra/usr/share/ncatomic/nca-web/ncatomic-web
   cp    "src/core/out/{{target}}/"{nca-logs,nca-system,ncatomic,occ,occd} sysexts/mkosi.images/11-ncatomic-sysext/mkosi.extra/usr/bin/
 
 clean:
@@ -87,21 +87,25 @@ qemu target='release' *ARGS="-i strict -f":
   vm_args=()
   while [[ -n "${ARGS[*]}" ]]
   do
-    if ! [[ " ${ARGS[0]} " =~ " --runtime-tree=".*" " ]]
+    if ! [[ " ${ARGS[0]} " =~ " --runtime-tree=".*" " ]] && [[ "${ARGS[0]}" != "--rebuild" ]]
     then
       build_args+=("${ARGS[0]}")
     fi
-    if [[ "${ARGS[0]}" != "--no-core" ]]
+    if [[ "${ARGS[0]}" != "--no-core" ]] && [[ "${ARGS[0]}" != "--rebuild" ]]
     then
       vm_args+=("${ARGS[0]}")
     fi
     ARGS=("${ARGS[@]:1}")
   done
 
-  if [[ "${vm_args[*]}" == "--no-core" ]]
+  if [[ -z "${vm_args[*]}" ]]
+  then
+    vm_args+=("-i" "strict")
+  fi
+
+  if [[ -z "${build_args[*]}" ]]
   then
     build_args+=("-i" "strict" "-f")
-    vm_args+=("-i" "strict")
   fi
 
   if [[ "{{target}}" == "debug" ]] && ! [[ " {{ARGS}} " =~ " "(-P|--profile)" " ]]
@@ -128,7 +132,7 @@ qemu target='release' *ARGS="-i strict -f":
     fi
   done
 
-  if [[ " $ARGS " =~ .*" --rebuild " ]]
+  if [[ " {{ARGS}} " =~ .*" --rebuild " ]]
   then
     echo "Building with args: ${build_args[@]}"
 

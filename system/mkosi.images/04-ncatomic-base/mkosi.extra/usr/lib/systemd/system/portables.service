@@ -34,10 +34,10 @@ Environment=PORTABLES_PATH=/var/lib/portables
 #[[ "$$restart_ncatomic" == "false" ]] || systemctl restart ncatomic-target; \
 #'
 #ExecStart=/usr/lib/ncatomic/attach-portables.sh
-ExecStart=/usr/bin/portablectl read-only nca-caddy-svc true
-ExecStart=/usr/bin/portablectl attach --enable --now -p nca-sbx-root nca-caddy-svc
-ExecStart=/usr/bin/portablectl read-only nca-web-svc true
-ExecStart=/usr/bin/portablectl attach --enable --now -p nca-sbx-root nca-web-svc
+ExecStart=/usr/bin/portablectl read-only nca-caddy true
+ExecStart=/usr/bin/portablectl read-only nca-web true
+ExecStart=/usr/bin/portablectl attach --enable --now -p nca-sbx-root nca-caddy
+ExecStart=/usr/bin/portablectl attach --enable --now -p nca-sbx-root nca-web
 
 [Install]
 WantedBy=ncatomic.target
