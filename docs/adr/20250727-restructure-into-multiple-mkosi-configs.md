@@ -1,7 +1,7 @@
 # Restructure into multiple mkosi configs
 
-- Status: accepted
-- Deciders: @theCalcaholic
+- Status: superseded by [20251227-separate-mkosi-configurations-for-service-images-and-sysexts](20251227-separate-mkosi-configurations-for-service-images-and-sysexts.md)
+- Deciders: Tobias Knöppler
 - Date: 2025-07-26
 - Tags: mkosi, project-structure
 
