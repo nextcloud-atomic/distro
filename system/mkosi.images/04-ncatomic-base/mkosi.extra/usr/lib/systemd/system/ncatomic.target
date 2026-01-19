@@ -1,0 +1,8 @@
+[Unit]
+Description=main target for nextcloud atomic services
+AllowIsolate=no
+Requires=ncatomic-sysinit.target
+After=ncatomic-sysinit.target
+
+[Install]
+WantedBy=default.target

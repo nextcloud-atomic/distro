@@ -1,0 +1,7 @@
+enable nca-occd.service
+enable nca-system.service
+enable nca-system.socket
+enable nca-unlock.service
+enable nca-web.service
+enable nextcloud-all-in-one.service
+enable portables.service

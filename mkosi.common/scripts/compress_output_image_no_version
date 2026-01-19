@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -eux
+
+echo "Compressing extension images ..."
+
+for img in "${OUTPUTDIR}"/*.raw
+do
+  tar -caf "${img%_*.raw}.tar.gz" -C "${OUTPUTDIR}" "$(basename "$img")"
+done
+
+echo "done."

@@ -1,0 +1,8 @@
+[Unit]
+Description=early init target for nextcloud atomic services
+AllowIsolate=yes
+Before=sysinit.target
+
+[Install]
+WantedBy=sysinit.target
+

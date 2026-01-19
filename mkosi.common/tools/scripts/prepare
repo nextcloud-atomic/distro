@@ -29,12 +29,21 @@ setup_xcaddy() {
   echo "Done."
 }
 
+GO_VERSION=1.25.0
+
+setup_golang() {
+  wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O "${ARTIFACTDIR}/go.tar.gz"
+  tar -C "${BUILDROOT}/usr/local/" -xzf "${ARTIFACTDIR}/go.tar.gz"
+  echo "GO INSTALLED"
+  sleep 120
+}
+
 if [[ "$1" == "final" ]]
 then
   setup_cosign
+#  setup_golang
 else
   echo "toolstree prepare script run with other args than 'final'!"
-  sleep 30
   # setup_xcaddy
 fi
 

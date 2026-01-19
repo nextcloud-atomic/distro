@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -e
+#date -u +%Y%M%d%H%M
+#GIT_TAG="$(git describe 2>/dev/null || echo 'testing')"
+#echo "${GIT_TAG}_$(date -u +%Y%M%d%H%M)"
+OVERLAYS_VERSION=00
+
+echo "${OVERLAYS_VERSION}"
+exit 0
+
+SYSTEM_VERSION="$(../mkosi.version)"
+
+echo "${SYSTEM_VERSION}_${OVERLAYS_VERSION}"
+

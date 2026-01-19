@@ -1,0 +1,5 @@
+[Transfer]
+ProtectVerison=%A
+
+[Source]
+Type=regular-file

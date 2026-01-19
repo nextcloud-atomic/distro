@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+
+set -eu
+
+# echo "Compressing service images ..."
+
+# for img in "${BUILDROOT}/usr/share/embedded/svc-extensions"/*.raw
+# do
+#   tar -caf "${img%.raw}.tar.gz" -C "${BUILDROOT}/usr/share/embedded/svc-extensions/" "$img"
+#   rm "$img"
+# done
+
+# echo "done."
+
+get_image_version() {
+ local img image_version
+ img="${1?Missing argument: image path}"
+
+ if [[ "$img" =~ ".tar.gz"$ ]]
+   then
+   image_version="$(tar -tf "$img" | head -n 1)"
+ else
+   image_version="$img"
+ fi
+ image_version="${image_version##*_}"
+ image_version="${image_version%.tar.*}"
+ echo -n "$image_version"
+}
+
+if compgen -G "${SRCDIR}/portables"/*
+then
+  mkdir -p "${BUILDROOT}/usr/share/ncatomic/seed/portables"
+  for img in "${SRCDIR}/portables"/*
+  do
+    [[ -L "$img" ]] || continue;
+    img="$(readlink -f "$img")"
+    img="$(basename "$img")"
+    if [[ "$img" =~ ".tar.".*$ ]]
+    then
+      cp "$img" "${BUILDROOT}/usr/share/ncatomic/seed/portables/"
+    else
+      tar -caf "${BUILDROOT}/usr/share/ncatomic/seed/portables/${img%.raw}.tar.zst" --use-compress-program=zstd -C "${SRCDIR}/portables" "$img"
+    fi
+  done
+fi
+
+if compgen -G "${SRCDIR}/sysexts"/*
+then
+  mkdir -p "${BUILDROOT}/usr/share/ncatomic/seed/extensions"
+  for img in "${SRCDIR}/sysexts"/*
+  do
+    [[ -L "$img" ]] || continue;
+    img="$(readlink -f "$img")"
+    img="$(basename "$img")"
+    if [[ "$img" =~ ".tar.".*$ ]]
+    then
+      cp "$img" "${BUILDROOT}/usr/share/ncatomic/seed/extensions/"
+    else
+      tar -caf "${BUILDROOT}/usr/share/ncatomic/seed/extensions/${img}.tar.zst" --use-compress-program=zstd -C "${SRCDIR}/sysexts" "$img"
+    fi
+  done
+fi
+
+#if compgen -G "${BUILDROOT}/usr/share/embedded/portables/*.raw"
+#then
+#  for img in "${BUILDROOT}/usr/share/embedded/portables/"*.raw "${BUILDROOT}/usr/share/embedded/extensions/"*.raw;
+#  do
+#    img_version="$(get_image_version "$img")"
+#    set -x 
+#    mv "$img" "${img%_${IMAGE_VERSION}.*}_${IMAGE_VERSION}_${img_version}.${img##*.}"
+#    set +x
+#  done
+#fi
+
+#echo "done."
+
+
+if compgen -G "${BUILDROOT}/usr/lib/sysupdate.d/*.transfer"
+then
+  echo "Updating variables in sysupdate transfer definitions ..."
+
+  for transfer in "${BUILDROOT}/usr/lib/sysupdate.d/"*.transfer
+  do
+    image_pattern="$(grep '^MatchPattern=.*_@v.tar.' "$transfer" | head -n 1)"
+    image_pattern="${image_pattern#MatchPattern=}"
+    image_pattern="${image_pattern//%%SYSTEM_VERSION%%/}"
+    image_pattern="${image_pattern//%%OVERLAY_VERSION%%/}"
+    image_pattern="${image_pattern/__/_}"
+    image_pattern="${image_pattern%_*.tar.*}"
+    for img in "${BUILDROOT}/usr/share/ncatomic/seed/portables/${image_pattern}"* "${BUILDROOT}/usr/share/ncatomic/seed/extensions/${image_pattern}"*
+    do
+      [[ -f "$img" ]] || continue
+      image_version="$(get_image_version "$img")"
+      break
+    done
+
+    if [[ -z "${image_version:-}" ]]
+    then
+      echo "WARNING: No image found for pattern: ${image_pattern}"
+      sleep 10
+      continue
+    fi
+
+    sed -i \
+      -e "s/%%OVERLAY_VERSION%%/${image_version?}/g" \
+      -e "s/%%SYSTEM_VERSION%%/${IMAGE_VERSION?}/g" \
+      "$transfer"
+  done
+fi
+

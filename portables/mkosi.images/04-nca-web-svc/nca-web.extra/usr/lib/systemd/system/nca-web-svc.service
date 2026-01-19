@@ -1,0 +1,39 @@
+[Unit]
+Requires=nca-occd.service credentials-setup.service nca-system.socket
+After=nca-occd.service credentials-setup.service nca-system.socket
+Wants=nca-caddy-svc.service
+
+[Service]
+Type=notify
+NotifyAccess=all
+Environment=HOST=127.0.0.1
+Environment=PORT=3000
+Environment=CADDY_ADMIN_SOCKET=/run/caddy/admin.sock
+Environment=OCC_SERVER_ADDRESS=/run/ncatomic/occ/occ.sock
+Environment=CONFIG_PATH=/etc/ncatomic
+Environment=SYSTEMD_LOG_LEVEL=debug
+Environment=NCATOMIC_SOCKETS_PATH=/run/ncatomic/
+ExecStart=/usr/share/ncatomic/nca-web/ncatomic-web
+WorkingDirectory=/usr/share/ncatomic/nca-web
+
+#ExtensionImages=/etc/svc-extensions/nca-web-svc.raw
+
+#ProtectSystem=strict
+#ProtectHome=yes
+#PrivateTmp=yes
+#DynamicUser=yes
+#PrivateDevices=yes
+#PrivateUsers=yes
+#ReadOnlyPaths=/etc/machine-id
+
+#MountAPIVFS=yes
+#PrivateTmp=yes
+#BindReadOnlyPaths=/etc/machine-id
+ProtectKernelTunables=no
+
+BindReadOnlyPaths=/var/lib/systemd
+BindPaths=/run/caddy /etc/ncatomic /run/ncatomic /var/run/dbus
+LogNamespace=ncatomic
+
+[Install]
+WantedBy=ncatomic.target

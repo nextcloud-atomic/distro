@@ -1,0 +1,14 @@
+[Transfer]
+#ProtectedVersion=v1
+Verify=false
+
+[Source]
+Type=regular-file
+Path=/run/updates/portables/
+MatchPattern=test-svc_@v.raw
+
+[Target]
+Type=regular-file
+Path=/var/lib/portables.available/
+MatchPattern=test-svc_@v.raw
+CurrentSymlink=/var/lib/portables/test-svc.raw

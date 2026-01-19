@@ -4,4 +4,6 @@ set -e
 #date -u +%Y%M%d%H%M
 #GIT_TAG="$(git describe 2>/dev/null || echo 'testing')"
 #echo "${GIT_TAG}_$(date -u +%Y%M%d%H%M)"
-echo testing
+#echo testing
+
+bash ../mkosi.version

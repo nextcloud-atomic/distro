@@ -1,0 +1,11 @@
+[Unit]
+Description=Log system status until firstboot succeeds
+ConditionFirstBoot=yes
+DefaultDependencies=no
+Before=systemd-firstboot.service
+
+[Service]
+ExecStart=/usr/bin/bash -c 'while /usr/bin/systemctl is-active systemd-firstboot.service; do /usr/bin/systemctl status --no-pager; sleep 10; done'
+
+[Install]
+WantedBy=sysinit.target

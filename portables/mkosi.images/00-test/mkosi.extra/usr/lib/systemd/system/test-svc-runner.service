@@ -1,0 +1,9 @@
+[Unit]
+Description=Testing things with the root image option
+
+[Service]
+ExecStart=/usr/bin/test.sh
+
+ExecStop=/usr/bin/echo 'shutting down'
+
+

@@ -1,0 +1,8 @@
+[Unit]
+Description=Monitors paths for portable service updates/installations
+
+[Path]
+PathChanged=/var/lib/portables.active/
+MakeDirectory=yes
+DirectoryMode=0700
+

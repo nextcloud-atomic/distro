@@ -9,3 +9,5 @@ mkosi.key
 mkosi.der
 .idea/
 mkosi.tools.manifest
+mkosi.rootpw
+.buildcache

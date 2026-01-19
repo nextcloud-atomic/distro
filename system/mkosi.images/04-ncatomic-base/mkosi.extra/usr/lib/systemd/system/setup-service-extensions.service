@@ -1,18 +1,23 @@
 [Unit]
-ConditionPathIsDirectory=|/usr/share/embedded/svc-extensions
-ConditionPathExists=|!/etc/svc-extensions
+ConditionPathIsDirectory=|/usr/share/ncatomic/seed/portables
+ConditionPathExists=|!/var/lib/portables.active
 DefaultDependencies=no
-Before=sysinit.target
 After=local-fs.target
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/usr/bin/bash -c '[[ -d /etc/svc-extensions ]] || { \
- mkdir -p /etc/svc-extensions; \
- for ext in /usr/share/embedded/svc-extensions/*.raw; \
- do [[ "$${ext}" == "/usr/share/embedded/extensions/confexts/*" ]] || ln -s "$${ext}" "/etc/svc-extensions/$(basename "$${ext%_*}.raw")"; done; \
+ExecStart=/usr/bin/bash -c '[[ -d /var/lib/portables.active ]] || { \
+ mkdir -p /var/lib/portables /var/lib/portables.available; \
+ for ext in /usr/share/ncatomic/seed/portables/*.tar.*; \
+  do [[ "$${ext}" == "/usr/share/ncatomic/seed/portables/*.tar.*" ]] || { \
+  ext_name="$(basename "$${ext}")"; \
+  extracted="$(tar -tf "$${ext}" | head -n1)"; \
+  tar -xf "$${ext}" -C /var/lib/portables.available/; \
+  ln -s "/var/lib/portables.available/$${extracted}" "/var/lib/portables/$${extracted%%_*}.raw"; \
+ }; \
+ done; \
 }'
 
 [Install]
-WantedBy=sysinit.target
+WantedBy=ncatomic-sysinit.target

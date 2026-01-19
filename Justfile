@@ -15,10 +15,10 @@ build-core target='release':
   #!/usr/bin/env bash
   set -ex
   just nca-core::build --docker "{{target}}"
-  rm -rf mkosi.images/82-nca-web-svc/mkosi.extra/usr/share/ncatomic/nca-web/public || :;
-  cp -r "src/core/out/{{target}}/nca-web/public" mkosi.images/82-nca-web-svc/mkosi.extra/usr/share/ncatomic/nca-web/
-  cp    "src/core/out/{{target}}/nca-web/ncatomic-web" mkosi.images/82-nca-web-svc/mkosi.extra/usr/share/ncatomic/nca-web/ncatomic-web
-  cp    "src/core/out/{{target}}/"{nca-logs,nca-system,ncatomic,occ,occd} mkosi.images/71-ncatomic-sysext/mkosi.extra/usr/bin/
+  rm -rf portables/mkosi.images/04-nca-web-svc/nca-web.extra/usr/share/ncatomic/nca-web/public || :;
+  cp -r "src/core/out/{{target}}/nca-web/public" portables/mkosi.images/04-nca-web-svc/nca-web.extra/usr/share/ncatomic/nca-web/
+  cp    "src/core/out/{{target}}/nca-web/ncatomic-web" portables/mkosi.images/04-nca-web-svc/nca-web.extra/usr/share/ncatomic/nca-web/ncatomic-web
+  cp    "src/core/out/{{target}}/"{nca-logs,nca-system,ncatomic,occ,occd} sysexts/mkosi.images/11-ncatomic-sysext/mkosi.extra/usr/bin/
 
 clean:
   #!/usr/bin/env bash
@@ -26,7 +26,7 @@ clean:
   just nca-core::clean || :;
   ! [[ -d mkosi.output ]] || sudo rm -rf ./mkosi.output/*
 
-build target='release' *ARGS="-if":
+build target='release' *ARGS="-i strict -f":
   #!/usr/bin/env bash
   set -ex
   
@@ -41,7 +41,7 @@ build target='release' *ARGS="-if":
     deps+=(clean)
   fi
 
-  if ! [[ " ${ARGS}" =~ " --no-core" ]]
+  if ! [[ " ${ARGS} " =~ " --no-core " ]]
   then
     deps+=(build-core {{target}})
   fi
@@ -59,27 +59,59 @@ build target='release' *ARGS="-if":
     fi
   done
 
-  if ! [[ -d overlays/mkosi.output/NextcloudAtomicOverlays ]] || ! [[ " ${args[*]} " =~ " -"[a-zA-Z0-9]*i[a-zA-Z0-9]*" " ]]
+  [[ -f mkosi.key ]] || {
+    mkosi genkey
+    cp mkosi.key mkosi.crt portables/
+    cp mkosi.key mkosi.crt system/
+  }
+
+  if ! [[ -d portables/mkosi.output/NextcloudAtomicPortables ]] || ! [[ " ${args[*]} " =~ " -"[a-zA-Z0-9]*i[a-zA-Z0-9]*" " ]]
   then
-    mkosi "${args[@]}" -C overlays
+    mkosi "${args[@]}" -C portables
   fi
 
+  if ! [[ -d sysexts/mkosi.output/NextcloudAtomicSysexts ]] || ! [[ " ${args[*]} " =~ " -"[a-zA-Z0-9]*i[a-zA-Z0-9]*" " ]]
+  then
+    mkosi "${args[@]}" -C sysexts
+  fi
+
+  echo mkosi "${args[@]}" -C system
   mkosi "${args[@]}" -C system
 
-qemu target='release' *ARGS="-if":
+qemu target='release' *ARGS="-i strict -f":
   #!/usr/bin/env bash
   set -ex
 
-  just build {{target}} {{ARGS}}
+  ARGS=({{ARGS}})
+  build_args=()
+  vm_args=()
+  while [[ -n "${ARGS[*]}" ]]
+  do
+    if ! [[ " ${ARGS[0]} " =~ " --runtime-tree=".*" " ]]
+    then
+      build_args+=("${ARGS[0]}")
+    fi
+    if [[ "${ARGS[0]}" != "--no-core" ]]
+    then
+      vm_args+=("${ARGS[0]}")
+    fi
+    ARGS=("${ARGS[@]:1}")
+  done
 
-  args=({{ARGS}})
-  if [[ "${args[*]}" == "--no-core" ]]
+  if [[ "${vm_args[*]}" == "--no-core" ]]
   then
-    args+=("-if")
+    build_args+=("-i" "strict" "-f")
+    vm_args+=("-i" "strict")
+  fi
+
+  if [[ "{{target}}" == "debug" ]] && ! [[ " {{ARGS}} " =~ " "(-P|--profile)" " ]]
+  then
+    vm_args+=(--profile debug)
+    build_args+=(--profile debug)
   fi
 
   filtered=()
-  for arg in "${args[@]}"
+  for arg in "${vm_args[@]}"
   do
     if [[ "$arg" =~ ^"--" ]]
     then
@@ -87,17 +119,32 @@ qemu target='release' *ARGS="-if":
       then
         filtered+=("$arg")
       fi
-    elif [[ "$arg" =~ ^"-" ]]
+    elif [[ "$arg" =~ ^"-" ]] && [[ "$arg" != "-f" ]]
     then
       filtered+=("${arg//f/}")
-    else
+    elif [[ "$arg" != "-f" ]]
+    then
       filtered+=("$arg")
     fi
   done
 
-  echo "args: ${filtered[@]}"
-  sleep 10
+  if [[ " $ARGS " =~ .*" --rebuild " ]]
+  then
+    echo "Building with args: ${build_args[@]}"
 
+    just build {{target}} "${build_args[@]}"
+
+    echo "build complete"
+  fi
+
+
+  mkdir -p system/mkosi.runtime
+  if ! [[ -f system/mkosi.podmancache ]]
+  then
+    fallocate -l 5G system/mkosi.podmancache
+    mkfs.ext4 system/mkosi.podmancache
+  fi
   #mkosi "${filtered[@]}" --machine=ncatomic-test --ephemeral true vm
-  mkosi "${filtered[@]}" --machine=ncatomic-test --ephemeral true vm
+  ./scripts/mkscratch.sh
+  mkosi vm "${filtered[@]}" --runtime-tree="$PWD/scratch:/scratch" --machine=ncatomic-test --ephemeral true -C system
 

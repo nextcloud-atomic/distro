@@ -1,0 +1,43 @@
+[Unit]
+Description=Load or reload portable service images on boot and on update
+After=ncatomic-sysinit.target
+Requires=ncatomic-sysinit.target
+#OnSuccess=ncatomic-restart.target
+#OnSuccessJobMode=replace
+
+[Service]
+Type=oneshot
+RemainAfterExit=true
+Environment=PORTABLES_PATH=/var/lib/portables
+#ExecStart=/usr/bin/bash -c ' \
+#[[ -f "${PORTABLES}/base" ]] || { echo "ERROR: Base image (${PORTABLES}/base) not found!"; exit 1; }; \
+#base_img="$(readlink -f "${PORTABLES}/base")"; \
+#restart_ncatomic=false; \
+#for f in "${PORTABLES}/"* \
+#do [[ -L "$$f" ]] || continue; \
+# img="$(readlink -f "$$f")"; \
+# systemd-dissect --validate "$$img" || { echo "ERROR: Validation failed for $$img"; continue; }; \
+# echo "(Re)loading"; \
+# img_args=("$${base_img}" "--extension=$${img}"); \
+# if [[ "$${f}" =~ ^.*"-standalone" ]]; then; \
+#  img_args=("$${img}"); \
+# fi; \
+# \
+# if portablectl is-attached | grep "detached" \
+# then \
+#  portablectl attach -p trusted --enable "$${img_args[@]}"; \
+# else \
+#  portablectl reattach -p trusted --enable "$${img_args[@]}"; \
+#  restart_ncatomic=true; \
+# fi; \
+#done; \
+#[[ "$$restart_ncatomic" == "false" ]] || systemctl restart ncatomic-target; \
+#'
+#ExecStart=/usr/lib/ncatomic/attach-portables.sh
+ExecStart=/usr/bin/portablectl read-only nca-caddy-svc true
+ExecStart=/usr/bin/portablectl attach --enable --now -p nca-sbx-root nca-caddy-svc
+ExecStart=/usr/bin/portablectl read-only nca-web-svc true
+ExecStart=/usr/bin/portablectl attach --enable --now -p nca-sbx-root nca-web-svc
+
+[Install]
+WantedBy=ncatomic.target

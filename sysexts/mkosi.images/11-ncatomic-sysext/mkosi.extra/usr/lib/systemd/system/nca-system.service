@@ -1,0 +1,12 @@
+[Unit]
+Description=nca-system service
+
+[Service]
+Type=simple
+NonBlocking=True
+LogLevelMax=debug
+LoadCredentialEncrypted=ncatomic:/etc/ncatomic/credentials/
+ExecStart=/usr/bin/nca-system
+
+[Install]
+WantedBy=ncatomic.target

@@ -5,11 +5,22 @@ Repository for building [Nextcloud Atomic](https://nextcloudatomic.com) images.
 ## Build and run instructions (example for incus vm)
 
 ```sh
-# Build image
-mkosi -f
+# Build and run qemu vm
+just qemu release -f
+```
 
-# Run incus vm from generated image
-./run_incus_vm.sh
+## File structure
+
+```
+.
+├── docs # project documentation
+├── mkosi.common # mkosi configuration/scripts that are used in other places
+├── overlays # deprecated
+├── portables # mkosi config for various portable services
+├── src # sources for building binaries
+├── sysexts # mkosi config for building systemd sysexts
+├── system # mkosi config for building system image
+└── tools # mkosi config for building the tool tree
 ```
 
 ## Funding

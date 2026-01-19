@@ -1,0 +1,5 @@
+#!/usr/bin/bash
+
+#ls -l1 /usr/bin/caddy || exit 1
+
+#ls -l1 /usr/bin/
