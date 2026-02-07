@@ -1,0 +1,57 @@
+#!/bin/bash
+set -eu -o pipefail
+
+if [[ "${FETCH_UPSTREAM:-no}" != "yes" ]]
+then
+  echo "FETCH_UPSTREAM not set to yes, not updating nc aio compose files."
+  exit 0
+fi
+
+SYSEXT_EXTRA_TREE="${SRCDIR}/ncatomic-sysext/mkosi.extra"
+#SVC_IMAGE_EXTRA_TREE="${SRCDIR}/mkosi.images/11-ncatomic-sysext/mkosi.extra"
+COMP_FILE="${SYSEXT_EXTRA_TREE}/usr/lib/ncatomic/nc-aio/compose.yaml"
+COMP_FILE_TMP="${SRCDIR}/buildcache/aio_compose.yml"
+COMP_FILE_LOGGING="${SYSEXT_EXTRA_TREE}/usr/lib/ncatomic/nc-aio/compose.logging.yaml"
+
+release_image_tag="$(bash "${SRCDIR}/ncatomic-sysext/find_nc_image_tag.sh")"
+if [[ "$AIO_IMAGE_TAG" == "auto" ]]
+then
+  AIO_IMAGE_TAG="${release_image_tag}"
+fi
+
+echo "Fetching Nextcloud All-in-One compose.yml from https://raw.githubusercontent.com/nextcloud/all-in-one/refs/tags/${AIO_VERSION}/manual-install/latest.yml"
+curl "https://raw.githubusercontent.com/nextcloud/all-in-one/refs/tags/${AIO_VERSION}/manual-install/latest.yml" > "${COMP_FILE_TMP}"
+python3 "${SRCDIR}/ncatomic-sysext/parse_compose.py" "${COMP_FILE_TMP}" "${AIO_IMAGE_TAG:-release_image_tag}" || {
+  rc=$?
+  echo "ERROR: parse_compose.py exited with error code $rc"
+  echo "Upstream compose file was:"
+  cat "${COMP_FILE_TMP}"
+  echo "Exiting ..."
+  exit $rc
+}
+mv "$COMP_FILE_TMP" "$COMP_FILE"
+
+LOGGING_CONF="services:"
+while read -r -u 3 svc
+do
+  LOGGING_CONF="$LOGGING_CONF
+  ${svc}:
+    logging:
+      driver: journald
+      options:
+        tag: \${LOGGING_TAG:-nextcloud-all-in-one}"
+  svc_env="$( yq -r ".services[\"$svc\"].environment" < "${COMP_FILE}" | grep -v '=' || :; )"
+  if [[ "$svc_env" == "null" || -z "$svc_env" ]]
+  then
+    continue
+  fi
+
+  while read -r env_var
+  do
+    env_var_name="${env_var## *- *}"
+    env_var_name="${env_var_name%% *}"
+    LOGGING_CONF="$LOGGING_CONF
+      - ${env_var_name}=\${${env_var_name}}"
+  done <<<"$svc_env"
+done 3< <( yq -r '.services | keys' < "${COMP_FILE}" | sed -e 's/^- //g' )
+echo "${LOGGING_CONF}" > "${COMP_FILE_LOGGING}"

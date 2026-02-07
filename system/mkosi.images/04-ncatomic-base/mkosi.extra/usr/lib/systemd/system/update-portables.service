@@ -1,0 +1,7 @@
+[Unit]
+Wants=update-portable@nca-caddy.service
+Wants=update-portable@nca-web.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/echo "Updating portables"

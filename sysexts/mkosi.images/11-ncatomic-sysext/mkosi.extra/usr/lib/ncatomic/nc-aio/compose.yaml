@@ -44,7 +44,7 @@ services:
       start_period: 0s
       test: /healthcheck.sh
       timeout: 30s
-    image: ghcr.io/nextcloud-releases/aio-apache:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-apache:20260122_105751
     init: true
     ports:
     - ${APACHE_IP_BINDING}:${APACHE_PORT}:${APACHE_PORT}/tcp
@@ -76,7 +76,7 @@ services:
       start_period: 60s
       test: /healthcheck.sh
       timeout: 30s
-    image: ghcr.io/nextcloud-releases/aio-clamav:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-clamav:20260122_105751
     init: false
     profiles:
     - clamav
@@ -95,14 +95,17 @@ services:
     cap_add:
     - MKNOD
     - SYS_ADMIN
+    - SYS_CHROOT
+    - FOWNER
     - CHOWN
     cap_drop:
     - NET_RAW
     command: ${ADDITIONAL_COLLABORA_OPTIONS}
     environment:
-    - aliasgroup1=https://${NC_DOMAIN}:443
-    - extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:mount_jail_tree=false
-      --o:logging.level=warning --o:home_mode.enable=true --o:remote_font_config.url=https://${NC_DOMAIN}/apps/richdocuments/settings/fonts.json
+    - aliasgroup1=https://${NC_DOMAIN}:443,http://nextcloud-aio-apache:23973
+    - extra_params=--o:ssl.enable=false --o:ssl.termination=true --o:logging.disable_server_audit=true
+      --o:logging.level=warning --o:logging.level_startup=warning --o:welcome.enable=false
+      --o:remote_font_config.url=https://${NC_DOMAIN}/apps/richdocuments/settings/fonts.json
       --o:net.post_allow.host[0]=.+
     - dictionaries=${COLLABORA_DICTIONARIES}
     - TZ=${TIMEZONE}
@@ -117,7 +120,7 @@ services:
       start_period: 60s
       test: /healthcheck.sh
       timeout: 30s
-    image: ghcr.io/nextcloud-releases/aio-collabora:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-collabora:20260122_105751
     init: true
     profiles:
     - collabora
@@ -140,7 +143,7 @@ services:
       start_period: 0s
       test: /healthcheck.sh
       timeout: 30s
-    image: ghcr.io/nextcloud-releases/aio-postgresql:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-postgresql:20260122_105751
     init: true
     read_only: true
     restart: unless-stopped
@@ -158,10 +161,10 @@ services:
     environment:
     - TZ=${TIMEZONE}
     - ES_JAVA_OPTS=${FULLTEXTSEARCH_JAVA_OPTIONS}
-    - bootstrap.memory_lock=true
+    - bootstrap.memory_lock=false
     - cluster.name=nextcloud-aio
     - discovery.type=single-node
-    - logger.org.elasticsearch.discovery=WARN
+    - logger.level=WARN
     - http.port=9200
     - xpack.license.self_generated.type=basic
     - xpack.security.enabled=false
@@ -175,7 +178,7 @@ services:
       start_period: 60s
       test: /healthcheck.sh
       timeout: 5s
-    image: ghcr.io/nextcloud-releases/aio-fulltextsearch:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-fulltextsearch:20260122_105751
     init: false
     profiles:
     - fulltextsearch
@@ -199,7 +202,7 @@ services:
       start_period: 0s
       test: /healthcheck.sh
       timeout: 30s
-    image: ghcr.io/nextcloud-releases/aio-imaginary:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-imaginary:20260122_105751
     init: true
     profiles:
     - imaginary
@@ -238,6 +241,7 @@ services:
     - POSTGRES_DB=nextcloud_database
     - POSTGRES_USER=nextcloud
     - REDIS_HOST=nextcloud-aio-redis
+    - REDIS_PORT=6379
     - REDIS_HOST_PASSWORD=${REDIS_PASSWORD}
     - APACHE_HOST=nextcloud-aio-apache
     - APACHE_PORT=${APACHE_PORT}
@@ -263,11 +267,14 @@ services:
     - TALK_PORT=${TALK_PORT}
     - IMAGINARY_ENABLED=${IMAGINARY_ENABLED}
     - IMAGINARY_HOST=nextcloud-aio-imaginary
-    - CLAMAV_MAX_SIZE=${APACHE_MAX_SIZE}
     - PHP_UPLOAD_LIMIT=${NEXTCLOUD_UPLOAD_LIMIT}
     - PHP_MEMORY_LIMIT=${NEXTCLOUD_MEMORY_LIMIT}
     - FULLTEXTSEARCH_ENABLED=${FULLTEXTSEARCH_ENABLED}
     - FULLTEXTSEARCH_HOST=nextcloud-aio-fulltextsearch
+    - FULLTEXTSEARCH_PROTOCOL=http
+    - FULLTEXTSEARCH_PORT=9200
+    - FULLTEXTSEARCH_USER=elastic
+    - FULLTEXTSEARCH_INDEX=nextcloud-aio
     - PHP_MAX_TIME=${NEXTCLOUD_MAX_TIME}
     - TRUSTED_CACERTS_DIR=${NEXTCLOUD_TRUSTED_CACERTS_DIR}
     - STARTUP_APPS=${NEXTCLOUD_STARTUP_APPS}
@@ -292,7 +299,7 @@ services:
       start_period: 0s
       test: /healthcheck.sh
       timeout: 30s
-    image: ghcr.io/nextcloud-releases/aio-nextcloud:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-nextcloud:20260122_105751
     init: true
     restart: unless-stopped
     stop_grace_period: 600s
@@ -309,6 +316,7 @@ services:
     - NEXTCLOUD_HOST=nextcloud-aio-nextcloud
     - TZ=${TIMEZONE}
     - REDIS_HOST=nextcloud-aio-redis
+    - REDIS_PORT=6379
     - REDIS_HOST_PASSWORD=${REDIS_PASSWORD}
     - POSTGRES_HOST=nextcloud-aio-database
     - POSTGRES_PORT=5432
@@ -324,7 +332,7 @@ services:
       start_period: 0s
       test: /healthcheck.sh
       timeout: 30s
-    image: ghcr.io/nextcloud-releases/aio-notify-push:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-notify-push:20260122_105751
     init: true
     read_only: true
     restart: unless-stopped
@@ -348,7 +356,7 @@ services:
       start_period: 60s
       test: /healthcheck.sh
       timeout: 30s
-    image: ghcr.io/nextcloud-releases/aio-onlyoffice:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-onlyoffice:20260122_105751
     init: true
     profiles:
     - onlyoffice
@@ -370,7 +378,7 @@ services:
       start_period: 0s
       test: /healthcheck.sh
       timeout: 30s
-    image: ghcr.io/nextcloud-releases/aio-redis:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-redis:20260122_105751
     init: true
     read_only: true
     restart: unless-stopped
@@ -397,7 +405,7 @@ services:
       start_period: 0s
       test: /healthcheck.sh
       timeout: 30s
-    image: ghcr.io/nextcloud-releases/aio-talk:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-talk:20260122_105751
     init: true
     ports:
     - ${TALK_PORT}:${TALK_PORT}/tcp
@@ -431,7 +439,7 @@ services:
       start_period: 0s
       test: /healthcheck.sh
       timeout: 30s
-    image: ghcr.io/nextcloud-releases/aio-talk-recording:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-talk-recording:20260122_105751
     init: true
     profiles:
     - talk-recording
@@ -452,6 +460,7 @@ services:
     - JWT_SECRET_KEY=${WHITEBOARD_SECRET}
     - STORAGE_STRATEGY=redis
     - REDIS_HOST=nextcloud-aio-redis
+    - REDIS_PORT=6379
     - REDIS_HOST_PASSWORD=${REDIS_PASSWORD}
     - BACKUP_DIR=/tmp
     expose:
@@ -463,7 +472,7 @@ services:
       start_period: 0s
       test: /healthcheck.sh
       timeout: 30s
-    image: ghcr.io/nextcloud-releases/aio-whiteboard:20250701_092737
+    image: ghcr.io/nextcloud-releases/aio-whiteboard:20260122_105751
     init: true
     profiles:
     - whiteboard

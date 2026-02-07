@@ -1,7 +1,7 @@
 [Unit]
 Description=Load or reload portable service images on boot and on update
-After=ncatomic-sysinit.target
-Requires=ncatomic-sysinit.target
+After=ncatomic-sysinit.target setup-service-extensions.service
+Requires=ncatomic-sysinit.target setup-service-extensions.service
 #OnSuccess=ncatomic-restart.target
 #OnSuccessJobMode=replace
 
@@ -34,10 +34,11 @@ Environment=PORTABLES_PATH=/var/lib/portables
 #[[ "$$restart_ncatomic" == "false" ]] || systemctl restart ncatomic-target; \
 #'
 #ExecStart=/usr/lib/ncatomic/attach-portables.sh
-ExecStart=/usr/bin/portablectl read-only nca-caddy true
-ExecStart=/usr/bin/portablectl read-only nca-web true
-ExecStart=/usr/bin/portablectl attach --enable --now -p nca-sbx-root nca-caddy
-ExecStart=/usr/bin/portablectl attach --enable --now -p nca-sbx-root nca-web
+ExecStartPre=/usr/bin/portablectl read-only nca-caddy true
+ExecStartPre=/usr/bin/portablectl read-only nca-web true
+ExecStartPre=/usr/bin/portablectl attach --enable --now -p nca-sbx-root nca-caddy
+ExecStartPre=/usr/bin/portablectl attach --enable --now -p nca-sbx-root nca-web
+ExecStart=/usr/bin/echo "Portable services started."
 
 [Install]
 WantedBy=ncatomic.target

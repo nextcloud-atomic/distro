@@ -1,0 +1,24 @@
+[Unit]
+Description=Automatic System Update for namespace
+Documentation=man:systemd-sysupdate.service(8)
+Wants=network-online.target
+After=network-online.target ncatomic.target
+PartOf=update-portables.service
+ConditionVirtualization=!container
+
+[Service]
+Type=oneshot
+NotifyAccess=main
+ExecStart=/usr/lib/systemd/systemd-sysupdate -C %i update
+ExecStartPost=/usr/bin/bash /usr/lib/ncatomic/reattach-portable.sh %i
+CapabilityBoundingSet=CAP_CHOWN CAP_FOWNER CAP_FSETID CAP_MKNOD CAP_SETFCAP CAP_SYS_ADMIN CAP_SETPCAP CAP_DAC_OVERRIDE CAP_LINUX_IMMUTABLE
+NoNewPrivileges=yes
+MemoryDenyWriteExecute=yes
+ProtectHostname=yes
+RestrictRealtime=yes
+RestrictNamespaces=net
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallFilter=@system-service @mount
+SystemCallErrorNumber=EPERM
+SystemCallArchitectures=native
+LockPersonality=yes

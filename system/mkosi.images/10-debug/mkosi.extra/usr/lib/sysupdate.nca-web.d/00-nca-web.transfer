@@ -1,0 +1,14 @@
+[Transfer]
+#ProtectedVersion=v1
+Verify=false
+
+[Source]
+Type=regular-file
+Path=/scratch/updates/portables/
+MatchPattern=nca-web_@v.raw
+
+[Target]
+Type=regular-file
+Path=/var/lib/portables.available/
+MatchPattern=nca-web_@v.raw
+CurrentSymlink=/var/lib/portables/nca-web.raw

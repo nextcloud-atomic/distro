@@ -67,7 +67,6 @@ ExecStopPost=-/usr/bin/podman pod stop pod_nc-aio
 ExecStopPost=-/usr/bin/podman pod rm pod_nc-aio
 TimeoutStartSec=1800
 
-ExtensionImages=/etc/extensions/nc-aio-svc.raw
 # Security & Isolation
 #StateDirectory=/var/lib/ncatomic/internal/nc-aio/
 User=aio
