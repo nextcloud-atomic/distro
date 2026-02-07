@@ -1,0 +1,6 @@
+#!/usr/bin/bash
+
+set -eu
+
+sed -i -e 's/%SVC%/'"${PORTABLE_PREFIX}"'/g' "${BUILDROOT}"/usr/lib/systemd/system/svc-watcher.path
+mv "${BUILDROOT}"/usr/lib/systemd/system/svc-watcher.path "${BUILDROOT}"/usr/lib/systemd/system/"${PORTABLE_PREFIX}"-watcher.path

@@ -1,0 +1,6 @@
+[Unit]
+Requisite=portables.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/bash /usr/lib/ncatomic/reattach-portables.sh

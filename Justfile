@@ -1,3 +1,4 @@
+[group("core")]
 fetch-core:
   #!/usr/bin/env bash
   set -ex
@@ -5,12 +6,16 @@ fetch-core:
   [ -d ./src/core ] || git submodule add https://github.com/nextcloud-atomic/core.git ./src/core
   ( cd ./src/core && git pull; )
 
+[group("core")]
 mod? nca-core 'src/core/Justfile'
 
+[group("clean")]
+[group("core")]
 clean-core:
   @just nca-core::clean
   echo "done."
-  
+
+[group("core")]
 build-core target='release':
   #!/usr/bin/env bash
   set -ex
@@ -20,127 +25,147 @@ build-core target='release':
   cp    "src/core/out/{{target}}/nca-web/ncatomic-web" portables/mkosi.images/04-nca-web/nca-web.extra/usr/share/ncatomic/nca-web/ncatomic-web
   cp    "src/core/out/{{target}}/"{nca-logs,nca-system,ncatomic,occ,occd} sysexts/mkosi.images/11-ncatomic-sysext/mkosi.extra/usr/bin/
 
+[group("clean")]
 clean:
   #!/usr/bin/env bash
   set -ex
   just nca-core::clean || :;
-  ! [[ -d mkosi.output ]] || sudo rm -rf ./mkosi.output/*
+  ! [[ -d mkosi.output ]] || sudo rm -rf ./{system,sysexts,portables}mkosi.output/*
+  #sudo rm -rf ./tools/tools
 
-build target='release' *ARGS="-i strict -f":
+## Build
+
+_parse_build_args:
   #!/usr/bin/env bash
-  set -ex
-  
-  ARGS="{{ARGS}}"
-  if [[ "${ARGS}" == "--no-core" ]]
+
+[group("build")]
+genkey:
+  #!/usr/bin/env bash
+  set -euxo pipefail
+  [[ -f mkosi.key ]] || mkosi genkey
+
+[group("build")]
+[arg("rebuild", long="rebuild", value="true")]
+toolstree rebuild="false" *ARGS="":
+  #!/usr/bin/env bash
+  if ! [[ -d "tools/tools" ]] || [[ "{{rebuild}}" == "true" ]]
   then
-    ARGS="-if --no-core"
+    mkosi -C tools build -f
+  fi
+
+[group("build")]
+build target='release' *ARGS="-i -f":
+  just build-system "{{target}}" -- {{ARGS}}
+
+[group("build")]
+[arg("noclean", long="no-clean", value="true")]
+[arg("nocore", long="no-core", value="true")]
+build-portables noclean="false" nocore="false" target='release' *ARGS="-i -f": genkey toolstree
+  #!/usr/bin/env bash
+  ARGS=({{ARGS}})
+  if [[ -z "{{ARGS}}" ]]
+  then
+    ARGS=("-if")
+  fi
+  if [[ "{{target}}" == "debug" ]] && ! [[ " {{ARGS}} " =~ " "(-P|--profile)" " ]]
+  then
+    ARGS+=(--profile debug)
+  fi
+
+  if [[ "{{noclean}}" != true ]] && [[ " ${ARGS[*]}" =~ " -"[a-zA-Z0-9]*"f" ]]
+  then
+    just clean
+  fi
+
+  if ! [[ -d "src/core" ]]
+  then
+    just fetch-core
+  fi
+
+  if [[ -d "src/core/out/{{target}}" ]] && [[ "{{nocore}}" != true ]]
+  then
+    if [[ "{{noclean}}" != true ]] && [[ " ${ARGS[*]}" =~ " -"[a-zA-Z0-9]*"f" ]]
+    then
+      just clean-core
+    fi
+    just build-core {{target}}
+  fi
+
+  cp mkosi.key mkosi.crt portables/
+
+  echo mkosi "${ARGS[@]}" -C sysexts
+  mkosi "${ARGS[@]}" -C sysexts
+
+[group("build")]
+[arg("noclean", long="no-clean", value="true")]
+build-sysexts noclean="false" target='release' *ARGS="-if": genkey (toolstree)
+  #!/usr/bin/env bash
+  set -exuo pipefail
+
+  ARGS=({{ARGS}})
+  if [[ "{{target}}" == "debug" ]] && ! [[ " {{ARGS}} " =~ " "(-P|--profile)" " ]]
+  then
+    ARGS+=(--profile debug)
+  fi
+
+  if [[ "{{noclean}}" != true ]] && [[ " ${ARGS[*]}" =~ " -"[a-zA-Z0-9]*"f" ]]
+  then
+    just clean
+  fi
+
+  cp mkosi.key mkosi.crt sysexts/
+
+  echo mkosi "${ARGS[@]}" -C sysexts
+  mkosi "${ARGS[@]}" -C sysexts
+
+[group("build")]
+[arg("noclean", long="no-clean", value="true")]
+[arg("nocore", long="no-core", value="true")]
+build-system noclean="false" nocore="false" target='release' *ARGS="-i -f": genkey toolstree
+  #!/usr/bin/env bash
+  set -exuo pipefail
+  
+  ARGS=({{ARGS}})
+  if [[ "{{target}}" == "debug" ]] && ! [[ " {{ARGS}} " =~ " "(-P|--profile)" " ]]
+  then
+    ARGS+=(--profile debug)
   fi
   deps=()
-  if [[ " ${ARGS}" =~ " -"[a-zA-Z0-9]*"f" ]]
+  if [[ "{{noclean}}" != "true" ]] && [[ " ${ARGS[*]}" =~ " -"[a-zA-Z0-9]*"f" ]]
   then
-    deps+=(clean)
+    just clean
   fi
 
-  if ! [[ " ${ARGS} " =~ " --no-core " ]]
+  cp mkosi.key mkosi.crt system/
+
+  if ! [[ -d portables/mkosi.output/01-base ]] || ! [[ " ${ARGS[*]} " =~ " -"[a-zA-Z0-9]*i[a-zA-Z0-9]*" " ]]
   then
-    deps+=(build-core {{target}})
+    p_args=()
+    [[ "{{nocore}}" != true ]] || p_args+=(--no-core)
+    [[ "{{noclean}}" != true ]] || p_args+=(--no-clean)
+    just build-portables "${p_args[@]}" "{{target}}" -- "${ARGS[@]}"
   fi
 
-  echo "Running with deps: ${deps[@]}"
-
-  just "${deps[@]}"
-
-  args=()
-  for arg in ${ARGS}
-  do
-    if [[ "$arg" != "--no-core" ]]
-    then
-      args+=("$arg")
-    fi
-  done
-
-  [[ -f mkosi.key ]] || {
-    mkosi genkey
-    cp mkosi.key mkosi.crt portables/
-    cp mkosi.key mkosi.crt system/
-  }
-
-  if ! [[ -d portables/mkosi.output/NextcloudAtomicPortables ]] || ! [[ " ${args[*]} " =~ " -"[a-zA-Z0-9]*i[a-zA-Z0-9]*" " ]]
+  if ! [[ -d sysexts/mkosi.output/01-base ]] || ! [[ " ${ARGS[*]} " =~ " -"[a-zA-Z0-9]*i[a-zA-Z0-9]*" " ]]
   then
-    mkosi "${args[@]}" -C portables
+    [[ "{{noclean}}" != true ]] || p_args+=(--no-clean)
+    just build-sysexts "${p_args[@]}" "{{target}}" -- "${ARGS[@]}"
   fi
 
-  if ! [[ -d sysexts/mkosi.output/NextcloudAtomicSysexts ]] || ! [[ " ${args[*]} " =~ " -"[a-zA-Z0-9]*i[a-zA-Z0-9]*" " ]]
-  then
-    mkosi "${args[@]}" -C sysexts
-  fi
+  echo mkosi "${ARGS[@]}" -C system
+  mkosi "${ARGS[@]}" -C system
 
-  echo mkosi "${args[@]}" -C system
-  mkosi "${args[@]}" -C system
-
-qemu target='release' *ARGS="-i strict -f":
+[group("vm")]
+qemu target='release' *ARGS="-i":
   #!/usr/bin/env bash
   set -ex
 
   ARGS=({{ARGS}})
-  build_args=()
-  vm_args=()
-  while [[ -n "${ARGS[*]}" ]]
-  do
-    if ! [[ " ${ARGS[0]} " =~ " --runtime-tree=".*" " ]] && [[ "${ARGS[0]}" != "--rebuild" ]]
-    then
-      build_args+=("${ARGS[0]}")
-    fi
-    if [[ "${ARGS[0]}" != "--no-core" ]] && [[ "${ARGS[0]}" != "--rebuild" ]]
-    then
-      vm_args+=("${ARGS[0]}")
-    fi
-    ARGS=("${ARGS[@]:1}")
-  done
-
-  if [[ -z "${vm_args[*]}" ]]
-  then
-    vm_args+=("-i" "strict")
-  fi
-
-  if [[ -z "${build_args[*]}" ]]
-  then
-    build_args+=("-i" "strict" "-f")
-  fi
 
   if [[ "{{target}}" == "debug" ]] && ! [[ " {{ARGS}} " =~ " "(-P|--profile)" " ]]
   then
-    vm_args+=(--profile debug)
-    build_args+=(--profile debug)
+    ARGS+=(--profile debug)
   fi
-
-  filtered=()
-  for arg in "${vm_args[@]}"
-  do
-    if [[ "$arg" =~ ^"--" ]]
-    then
-      if [[ "$arg" != "--force" ]] && [[ "$arg" != "--no-core" ]]
-      then
-        filtered+=("$arg")
-      fi
-    elif [[ "$arg" =~ ^"-" ]] && [[ "$arg" != "-f" ]]
-    then
-      filtered+=("${arg//f/}")
-    elif [[ "$arg" != "-f" ]]
-    then
-      filtered+=("$arg")
-    fi
-  done
-
-  if [[ " {{ARGS}} " =~ .*" --rebuild " ]]
-  then
-    echo "Building with args: ${build_args[@]}"
-
-    just build {{target}} "${build_args[@]}"
-
-    echo "build complete"
-  fi
-
 
   mkdir -p system/mkosi.runtime
   if ! [[ -f system/mkosi.podmancache ]]
@@ -148,7 +173,12 @@ qemu target='release' *ARGS="-i strict -f":
     fallocate -l 5G system/mkosi.podmancache
     mkfs.ext4 system/mkosi.podmancache
   fi
-  #mkosi "${filtered[@]}" --machine=ncatomic-test --ephemeral true vm
   ./scripts/mkscratch.sh
-  mkosi vm "${filtered[@]}" --runtime-tree="$PWD/scratch:/scratch" --machine=ncatomic-test --ephemeral true -C system
+  mkosi vm "${ARGS[@]}" \
+  --runtime-tree="$PWD/scratch:/scratch" \
+  --machine=ncatomic-test \
+  --ephemeral true \
+  --drive podmancache:5G::::persist \
+  --kernel-command-line-extra '-smbios type=11,value=io.systemd.stub.kernel-cmdline-extra=systemd.mount-extra=LABEL=podmancache:/podman-cache:ext4' \
+  -C system
 
